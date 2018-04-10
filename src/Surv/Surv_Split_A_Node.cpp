@@ -70,7 +70,7 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     Surv_Find_A_Split(&splitVar, &splitVal, X, Y, Censor, Ncat, Interval, myPara, subjectweight, useObs, node_n, variableweight, variableindex, P);
     if(splitVar == -1)
-      R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
+      //R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
     
     
     if (splitVar == -1) // didnt find anything

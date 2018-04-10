@@ -103,7 +103,7 @@ void Surv_Find_A_Split(int* splitVar,
       {
         Surv_One_Split_Cont_W(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight,
                               timepoints, split_gen, split_rule, nsplit, nmin, alpha);
-        R_DBP("Variable %i with val %i\n", temp_var,temp_score);
+        //R_DBP("Variable %i with val %i\n", temp_var,temp_score);
         
       }else{
         Surv_One_Split_Cont(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
