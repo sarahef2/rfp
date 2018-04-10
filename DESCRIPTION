@@ -1,0 +1,13 @@
+Package: survForest
+Type: Package
+Title: Survival Forest
+Version: 0.1.0
+Date: 2018-03-30
+Author: Ruoqing Zhu, Yifan Cui
+Maintainer: Ruoqing Zhu <teazrq@gmail.com>
+Description: Fit various surival tree and forest models using kernel averaging. Also calculate the regular and fiducial confidence intervals.
+License: GPL (>= 2)
+URL: https://sites.google.com/site/teazrq/
+Imports: Rcpp (>= 0.12.16)
+LinkingTo: Rcpp
+RoxygenNote: 6.0.1
