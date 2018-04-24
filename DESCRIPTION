@@ -1,7 +1,7 @@
-Package: survForest
+Package: RLT
 Type: Package
-Title: Survival Forest
-Version: 0.1.0
+Title: Reinforcement Learning Trees
+Version: 6.0.0
 Date: 2018-03-30
 Author: Ruoqing Zhu, Yifan Cui
 Maintainer: Ruoqing Zhu <teazrq@gmail.com>
