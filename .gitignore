@@ -12,3 +12,4 @@ src/*.dll
 src/Surv/*.dll
 *.dll
 *.[dll]
+**/*.dll
