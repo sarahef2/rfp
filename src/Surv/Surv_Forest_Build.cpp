@@ -85,7 +85,7 @@ void survForestBuild(//const double** X,
     // in-bag and out-of-bag data indicator
     //int *inbagObs = (int *) malloc(size * sizeof(int));
     //int *inbagObs = new int[size];
-    uvec inbagObs(size);
+    ivec inbagObs(size);
     ////int *oobagObs = (int *) malloc(N * sizeof(int)); // initiate a longer one
     //int *oobagObs = new int[N]; // initiate a longer one
     ivec oobagObs(N);
@@ -137,9 +137,9 @@ void survForestBuild(//const double** X,
     ivec Ytemp(size);
     for (i = 0; i< size; i++) Ytemp[i] = Y[inbagObs[i]];
 
-    //qSort_iindex(Ytemp, 0, size-1, inbagObs);
-    inbagObs = sort_index(Ytemp);
-    Ytemp = sort(Ytemp);
+    qSort_iindex(Ytemp, 0, size-1, inbagObs);
+    //inbagObs = sort_index(Ytemp);
+    //Ytemp = sort(Ytemp);
 
     //TREENODE *TreeRoot = (TREENODE*) malloc(sizeof(TREENODE));
     TREENODE *TreeRoot = new TREENODE;
@@ -149,6 +149,7 @@ void survForestBuild(//const double** X,
     //int *inbagObs_copy = new int[size];
     ivec inbagObs_copy(size);
     for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
+    Rcout << inbagObs_copy << std::endl;;
     
     // start to build the
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P);
