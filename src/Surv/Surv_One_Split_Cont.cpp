@@ -21,7 +21,9 @@
 
 //# include <Rdefines.h>
 //# include <R.h>
-#include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 using namespace Rcpp;
 # include <Rmath.h>
 
@@ -29,13 +31,14 @@ using namespace Rcpp;
 # include "..//survForest.h"
 # include "..//utilities.h"
 
-void Surv_One_Split_Cont(double *cut,
-                         double *score,
-                         const int* useObs,
+void Surv_One_Split_Cont(double* cut,
+                         double* score,
+                         const ivec useObs,
                          int node_n,
-                         const double* x, // x should be called by index useObs[i]
-                         const int* Y, // y should be called by index i
-                         const int* Censor, // censor should be called by index i
+                         //const double* x, // x should be called by index useObs[i]
+                         const colvec x,
+                         const ivec Y, // y should be called by index i
+                         const ivec Censor, // censor should be called by index i
                          int timepoints,
                          int split_gen,
                          int split_rule,
@@ -43,13 +46,18 @@ void Surv_One_Split_Cont(double *cut,
                          int mincount)
 {
   //int *Left_Count_Fail = (int *) malloc((timepoints+1)* sizeof(int));
-  int *Left_Count_Fail = new int[timepoints+1];
+  //int *Left_Count_Fail = new int[timepoints+1];
+  ivec Left_Count_Fail(timepoints+1);
+  Left_Count_Fail.fill(0);
   //int *Left_Count_Censor = (int *) malloc((timepoints+1)* sizeof(int));
-  int *Left_Count_Censor = new int[timepoints+1];
+  ivec Left_Count_Censor(timepoints+1);
+  Left_Count_Censor.fill(0);
   //int *Right_Count_Fail = (int *) malloc((timepoints+1)* sizeof(int));
-  int *Right_Count_Fail = new int[timepoints+1];
+  ivec Right_Count_Fail(timepoints+1);
+  Right_Count_Fail.fill(0);
   //int *Right_Count_Censor = (int *) malloc((timepoints+1)* sizeof(int));
-  int *Right_Count_Censor = new int[timepoints+1];
+  ivec Right_Count_Censor(timepoints+1);
+  Right_Count_Censor.fill(0);
 
   int i, k;
 
@@ -68,10 +76,10 @@ void Surv_One_Split_Cont(double *cut,
 
       double LeftN = 0;
 
-      memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
+      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
+      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
+      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
+      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
 
       for (i = 0; i<node_n; i++)
       {
@@ -107,22 +115,22 @@ void Surv_One_Split_Cont(double *cut,
     }
 
     //free(Left_Count_Fail);
-    delete[] Left_Count_Fail;
+    //delete[] Left_Count_Fail;
     //free(Left_Count_Censor);
-    delete[] Left_Count_Censor;
+    //delete[] Left_Count_Censor;
     //free(Right_Count_Fail);
-    delete[] Right_Count_Fail;
+    //delete[] Right_Count_Fail;
     //free(Right_Count_Censor);
-    delete[] Right_Count_Censor;
+    //delete[] Right_Count_Censor;
     return;
   }
 
   // rank and best split need to copy x
 
   //double* xtemp = (double *) malloc(node_n * sizeof(double));
-  double* xtemp = new double[node_n];
+  vec xtemp(node_n);
   //int* index = (int *) malloc(node_n * sizeof(int));
-  int* index = new int[node_n];
+  uvec index(node_n);
 
   for (i = 0; i < node_n; i++)
   {
@@ -130,7 +138,9 @@ void Surv_One_Split_Cont(double *cut,
     index[i] = i;
   }
 
-  qSort_dindex(xtemp, 0, node_n-1, index);
+  //qSort_dindex(xtemp, 0, node_n-1, index);
+  index = sort_index(xtemp);
+  xtemp = sort(xtemp);
 
   int lowindex = mincount - 1;
   int highindex = node_n - 1 - lowindex;
@@ -151,10 +161,10 @@ void Surv_One_Split_Cont(double *cut,
       temp_rank = random_in_range(lowindex, highindex+1);
       temp_score = -1;
 
-      memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
+      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
+      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
+      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
+      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
 
       // while in the middle of a sequence of ties, either move up or move down
       if (xtemp[temp_rank] == xtemp[temp_rank+1])
@@ -208,10 +218,10 @@ void Surv_One_Split_Cont(double *cut,
 
     //R_DBP("run best splitting rule");
 
-    memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
-    memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
-    memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
-    memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
+    //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
+    //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
+    //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
+    //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
 
     // place initial
     for (i = 0; i<=lowindex; i++)
@@ -274,32 +284,33 @@ void Surv_One_Split_Cont(double *cut,
   }
 
   //free(Left_Count_Fail);
-  delete[] Left_Count_Fail;
+  //delete[] Left_Count_Fail;
   //free(Left_Count_Censor);
-  delete[] Left_Count_Censor;
+  //delete[] Left_Count_Censor;
   //free(Right_Count_Fail);
-  delete[] Right_Count_Fail;
+  //delete[] Right_Count_Fail;
   //free(Right_Count_Censor);
-  delete[] Right_Count_Censor;
+  //delete[] Right_Count_Censor;
 
   //free(xtemp);
-  delete[] xtemp;
+  //delete[] xtemp;
   //free(index);
-  delete[] index;
+  //delete[] index;
   return;
 }
 
 
 
 
-void Surv_One_Split_Cont_W(double *cut,
-                           double *score,
-                           const int* useObs,
+void Surv_One_Split_Cont_W(double* cut,
+                           double* score,
+                           const ivec useObs,
                            int node_n,
-                           const double* x, // x should be called by index useObs[i]
-                           const int* Y, // y should be called by index i
-                           const int* Censor, // censor should be called by index i
-                           const double* subjectweight, // subjectweight should be called by index useObs[i]
+                           //const double* x, // x should be called by index useObs[i]
+                           const vec x,
+                           const ivec Y, // y should be called by index i
+                           const ivec Censor, // censor should be called by index i
+                           const vec subjectweight, // subjectweight should be called by index useObs[i]
                            int timepoints,
                            int split_gen,
                            int split_rule,
@@ -309,13 +320,17 @@ void Surv_One_Split_Cont_W(double *cut,
 {
 
   //double *Left_Count_Fail = (double *) malloc((timepoints+1)* sizeof(double));
-  double *Left_Count_Fail = new double[timepoints+1];
+  vec Left_Count_Fail(timepoints+1);
+  Left_Count_Fail.fill(0);
   //double *Left_Count_Censor = (double *) malloc((timepoints+1)* sizeof(double));
-  double *Left_Count_Censor = new double[timepoints+1];
+  vec Left_Count_Censor(timepoints+1);
+  Left_Count_Censor.fill(0);
   //double *Right_Count_Fail = (double *) malloc((timepoints+1)* sizeof(double));
-  double *Right_Count_Fail = new double[timepoints+1];
+  vec Right_Count_Fail(timepoints+1);
+  Right_Count_Fail.fill(0);
   //double *Right_Count_Censor = (double *) malloc((timepoints+1)* sizeof(double));
-  double *Right_Count_Censor = new double[timepoints+1];
+  vec Right_Count_Censor(timepoints+1);
+  Right_Count_Censor.fill(0);
   
   int i, k;
 
@@ -327,7 +342,7 @@ void Surv_One_Split_Cont_W(double *cut,
   double RightWeights = 0;
   double tempweight = 0;
 
-  if (split_gen == 1) // random split
+    if (split_gen == 1) // random split
   {
 
     for (k = 0; k < nsplit; k++)
@@ -338,10 +353,10 @@ void Surv_One_Split_Cont_W(double *cut,
       LeftWeights = 0;
       RightWeights = 0;
 
-      memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
-      memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
-      memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
-      memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
+      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
+      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
+      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
+      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
 
       for (i = 0; i<node_n; i++)
       {
@@ -374,30 +389,30 @@ void Surv_One_Split_Cont_W(double *cut,
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
       }
 
-      if (temp_score > *score)
+      if (temp_score > *score)//replaced score* with score
       {
-        *score = temp_score;
-        *cut = temp_cut;
+        *score = temp_score;//replaced *score with score
+        *cut = temp_cut;//replaced *cut with cut
       }
     }
 
     //free(Left_Count_Fail);
-    delete[] Left_Count_Fail;
+    //delete[] Left_Count_Fail;
     //free(Left_Count_Censor);
-    delete[] Left_Count_Censor;
+    //delete[] Left_Count_Censor;
     //free(Right_Count_Fail);
-    delete[] Right_Count_Fail;
+    //delete[] Right_Count_Fail;
     //free(Right_Count_Censor);
-    delete[] Right_Count_Censor;
+    //delete[] Right_Count_Censor;
     return;
   }
 
   // rank and best split need to copy x
 
   //double* xtemp = (double *) malloc(node_n * sizeof(double));
-  double* xtemp = new double[node_n];
+  vec xtemp(node_n);
   //int* index = (int *) malloc(node_n * sizeof(int));
-  int* index = new int[node_n];
+  uvec index(node_n);
 
   for (i = 0; i < node_n; i++)
   {
@@ -405,7 +420,9 @@ void Surv_One_Split_Cont_W(double *cut,
     index[i] = i;
   }
 
-  qSort_dindex(xtemp, 0, node_n-1, index);
+  //qSort_dindex(xtemp, 0, node_n-1, index);
+  index = sort_index(xtemp);
+  xtemp = sort(xtemp);
 
   int lowindex = imax(nmin, (int) alpha*node_n) - 1;
   int highindex = node_n - 1 - lowindex;
@@ -426,10 +443,10 @@ void Surv_One_Split_Cont_W(double *cut,
       temp_rank = random_in_range(lowindex, highindex+1);
       temp_score = -1;
 
-      memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
-      memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
-      memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
-      memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
+      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
+      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
+      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
+      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
 
       // while in the middle of a sequence of ties, either move up or move down
       if (xtemp[temp_rank] == xtemp[temp_rank+1])
@@ -483,11 +500,11 @@ void Surv_One_Split_Cont_W(double *cut,
   if (split_gen == 3) // best split
   {
 
-
-    memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
-    memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
-    memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
-    memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
+    
+    //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
+    //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
+    //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
+    //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
 
     LeftWeights = 0;
     RightWeights = 0;
@@ -499,9 +516,9 @@ void Surv_One_Split_Cont_W(double *cut,
       obs = index[i];
       tempweight = subjectweight[useObs[obs]];
 
-      if (Censor[obs] == 1)
+      if (Censor[obs] == 1){
         Left_Count_Fail[Y[obs]] += tempweight;
-      else
+      }else
         Left_Count_Censor[Y[obs]] += tempweight;
 
       LeftWeights += tempweight;
@@ -575,18 +592,18 @@ void Surv_One_Split_Cont_W(double *cut,
   }
 
   //free(Left_Count_Fail);
-  delete[] Left_Count_Fail;
+  //delete[] Left_Count_Fail;
   //free(Left_Count_Censor);
-  delete[] Left_Count_Censor;
+  //delete[] Left_Count_Censor;
   //free(Right_Count_Fail);
-  delete[] Right_Count_Fail;
+  //delete[] Right_Count_Fail;
   //free(Right_Count_Censor);
-  delete[] Right_Count_Censor;
+  //delete[] Right_Count_Censor;
   
   //free(xtemp);
-  delete[] xtemp;
+  //delete[] xtemp;
   //free(index);
-  delete[] index;
+  //delete[] index;
 
 
   return;

@@ -19,7 +19,9 @@
 //
 //  **********************************************************************
 
-# include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 //# include <Rdefines.h>
 # include <R.h>
 
@@ -30,71 +32,75 @@
 
 SEXP survForestFit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
-void survForestBuild(const double** X,
-                     const int* Y,
-                     const int* Censor,
-                     const int* Ncat,
-                     const double* Interval,
+void survForestBuild(//const double** X,
+                     const std::vector<  colvec > X,
+                     const ivec Y,
+                     const ivec Censor,
+                     const ivec Ncat,
+                     const vec Interval,
                      const PARAMETERS* myPara,
-                     const double* subjectweight,
-                     const int* subj_id,
+                     const vec subjectweight,
+                     const ivec subj_id,
                      const int N,
-                     double* variableweight,
-                     int* var_id,
+                     vec variableweight,
+                     ivec var_id,
                      const int P,
                      TREENODE** Forest,
-                     int** ObsTrack,
-                     int** NodeRegi,
-                     double** VarImp,
+                     imat &ObsTrack,
+                     imat &NodeRegi,
+                     mat VarImp,
                      int use_cores);
 
 void push_censor_front(int* inbagObs, int* Y, int* Censor, int size);
 
 void Record_NodeRegi(int* Node, TREENODE* TreeRoot, int* NodeRegi_nt);
 
-void Record_Tree(int* Node, TREENODE* TreeRoot, SEXP FittedTree, int TreeLength);
+void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength);
 
 void Surv_Split_A_Node(TREENODE* Node,
-                  const double** X,
-                  const int* Y,
-                  const int* Censor,
-                  const int* Ncat,
-                  const double* Interval,
+                  //const double** X,
+                  const std::vector<  colvec > X,
+                  const ivec Y,
+                  const ivec Censor,
+                  const ivec Ncat,
+                  const vec Interval,
                   const PARAMETERS* myPara,
-                  const double* subjectweight,
-                  int* useObs,
+                  const vec subjectweight,
+                  ivec useObs,
                   const int node_n,
-                  double* variableweight,
-                  int* variableindex,
+                  vec variableweight,
+                  ivec variableindex,
                   const int P);
 
 void Surv_Find_A_Split(int* splitVar,
                   double* splitVal,
-                  const double** X,
-                  const int* Y,
-                  const int* Censor,
-                  const int* Ncat,
-                  const double* Interval,
+                  //const double** X,
+                  std::vector<  colvec > X,
+                  ivec Y,
+                  const ivec Censor,
+                  const ivec Ncat,
+                  const vec Interval,
                   const PARAMETERS* myPara,
-                  const double* subjectweight,
-                  int* useObs,
+                  const vec subjectweight,
+                  ivec useObs,
                   const int node_n,
-                  double* variableweight,
-                  int* variableindex,
+                  vec variableweight,
+                  ivec variableindex,
                   const int P);
 
-void collapse(const int* Y, const int* Censor, int* Y_collapse, int* Censor_collapse, const int* useObs, int node_n, int* nfail);
+void collapse(const ivec Y, const ivec Censor, ivec &Y_collapse, ivec &Censor_collapse, const ivec useObs, int node_n, int &nfail);
 
 
 
-void Surv_One_Split_Cat_W(double *cut,
+void Surv_One_Split_Cat_W(double* cut,
                            double* score,
-                           const int* useObs,
+                           const ivec useObs,
                            int node_n,
-                           const double* x,
-                           const int* Y,
-                           const int* Censor,
-                           const double* subjectweight,
+                           //const double* x,
+                           const colvec x,
+                           const ivec Y,
+                           const ivec Censor,
+                           const vec subjectweight,
                            int ncat,
                            int timepoints,
                            int split_gen,
@@ -103,13 +109,14 @@ void Surv_One_Split_Cat_W(double *cut,
                            int nmin,
                            int alpha);
 
-void Surv_One_Split_Cat(double *cut,
+void Surv_One_Split_Cat(double* cut,
                         double* score,
-                        const int* useObs,
+                        const ivec useObs,
                         int node_n,
-                        const double* x,
-                        const int* Y,
-                        const int* Censor,
+                        //const double* x,
+                        const vec x,
+                        const ivec Y,
+                        const ivec Censor,
                         int ncat,
                         int timepoints,
                         int split_gen,
@@ -117,27 +124,29 @@ void Surv_One_Split_Cat(double *cut,
                         int nsplit,
                         int mincount);
 
-void Surv_One_Split_Cont(double *cut,
-                        double *score,
-                        const int* useObs,
+void Surv_One_Split_Cont(double* cut,
+                        double* score,
+                        const ivec useObs,
                         int node_n,
-                        const double* x,
-                        const int* Y,
-                        const int* Censor,
+                        //const double* x,
+                        const colvec x,
+                        const ivec Y,
+                        const ivec Censor,
                         int timepoints,
                         int split_gen,
                         int split_rule,
                         int nsplit,
                         int mincount);
 
-void Surv_One_Split_Cont_W(double *cut,
-                        double *score,
-                        const int* useObs,
+void Surv_One_Split_Cont_W(double* cut,
+                        double* score,
+                        const ivec useObs,
                         int node_n,
-                        const double* x,
-                        const int* Y,
-                        const int* Censor,
-                        const double* subjectweight,
+                        //const double* x,
+                        const vec x,
+                        const ivec Y,
+                        const ivec Censor,
+                        const vec subjectweight,
                         int timepoints,
                         int split_gen,
                         int split_rule,
@@ -145,17 +154,17 @@ void Surv_One_Split_Cont_W(double *cut,
                         int nmin,
                         int alpha);
 
-double logrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count_Fail, int* Right_Count_Censor, double LeftN, double AllN, int timepoints);
-double suplogrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count_Fail, int* Right_Count_Censor, double LeftN, double AllN, int timepoints);
+double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
+double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 
-double logrank_w(double* Left_Count_Fail, double* Left_Count_Censor, double* Right_Count_Fail, double* Right_Count_Censor, double LeftN, double AllN, int timepoints);
-double suplogrank_w(double* Left_Count_Fail, double* Left_Count_Censor, double* Right_Count_Fail, double* Right_Count_Censor, double LeftN, double AllN, int timepoints);
+double logrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
+double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 
 
 // prediction functions
 
 
-SEXP survForestPredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+List survForestPredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
 void PredictSurvivalKernel(const double** X,
                            const int* Y,

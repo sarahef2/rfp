@@ -19,12 +19,15 @@
 //
 //  **********************************************************************
 
-#include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 # include <stdbool.h>
 //# include <Rdefines.h>
 //# include <R.h>
 # include <Rmath.h>
 using namespace Rcpp;
+using namespace arma;
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -57,6 +60,11 @@ using namespace Rcpp;
 #endif
 
 void printLog(const char*, const char*, const int, const double);
+
+typedef std::vector<int> stdvecint;
+typedef std::vector< std::vector<int> > stdvecvecint;
+typedef std::vector<double> stdvec;
+typedef std::vector< std::vector<double> > stdvecvec;
 
 // parameters structure
 typedef struct PARAMETERS{
@@ -92,8 +100,8 @@ typedef struct SURVCAT{
   int cat;
   int f;
   int c;
-  int* flist;
-  int* clist;
+  ivec flist;
+  ivec clist;
 } SURVCAT;
 
 void swap_SURVCAT(SURVCAT* a, SURVCAT* b);
@@ -102,8 +110,8 @@ typedef struct SURVCAT_w{
   int cat;
   double f;
   double c;
-  double* flist;
-  double* clist;
+  vec flist;
+  vec clist;
 } SURVCAT_w;
 
 void swap_SURVCAT_w(SURVCAT_w* a, SURVCAT_w* b);
@@ -117,7 +125,7 @@ typedef struct TREENODE {
   int Var;
   double Val;
   int NodeSize;
-  int* NodeObs;
+  ivec NodeObs;//int* NodeObs;
   struct TREENODE *Left, *Right;
 } TREENODE;
 
@@ -129,7 +137,8 @@ int TreeSize(TREENODE *root);
 
 // other utility functions
 
-void standardize(double*, int);
+void standardize(//double*
+    vec&, int);
 int imin(int, int);
 int imax(int, int);
 double dmin(double, double);
@@ -142,43 +151,43 @@ void swap_i(int*, int i, int j);
 // random number
 
 int random_in_range(int, int);
-int sample_rotate(int *index, double* weights, int start, int end);
+int sample_rotate(ivec index, vec weights, int start, int end);
 int weighted_sample(const double* x, int n);
 
 // sorting
 
-int partition_d(double* keys,
-              int low,
-              int high,
-              int* index);
-
-void qSort_dindex(double* keys,
-                 int low,
-                 int high,
-                 int* index);
-
-void iSort_index(double* keys,
-                 int low,
-                 int high,
-                 int* index);
-
-int partition_i(int* keys,
+int partition_d(vec& keys,
                 int low,
                 int high,
-                int* index);
+                ivec& index);
 
-void qSort_iindex(int* keys,
+void qSort_dindex(vec& keys,
+                 int low,
+                 int high,
+                 ivec& index);
+
+void iSort_index(vec& keys,
+                 int low,
+                 int high,
+                 ivec& index);
+
+int partition_i(ivec& keys,
+                int low,
+                int high,
+                ivec& index);
+
+void qSort_iindex(ivec& keys,
                   int low,
                   int high,
-                  int* index);
+                  ivec& index);
 
 
-void permute_i(int* x, int n);
+void permute_i(ivec &x, int n);
 
 // cat variables pack
 
-double pack(const int nBits, const int *bits);
-void unpack(const double pack, const int nBits, int *bits);
+double pack(const int nBits, const ivec bits);
+void unpack(const double pack, const int nBits, ivec bits);
 int unpack_goright(double pack, const int cat);
 
 

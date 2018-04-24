@@ -19,11 +19,14 @@
 //
 //  **********************************************************************
 
-#include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 //# include <Rdefines.h>
 //# include <R.h>
 //# include <Rmath.h>
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "utilities.h"
@@ -142,16 +145,20 @@ bool CheckVar(TREENODE *Node, int j)
 
 // other utility functions
 
-void standardize(double* x, int n)
+void standardize(//double* x
+    vec &x, int n)
 {
-  double sum = 0;
+  double sumx=0;//=sum(x);//Can replace if too slow
   int i;
 
   for (i=0; i<n; i++)
-    sum += x[i];
-
-  for (i=0; i<n; i++)
-    x[i] = x[i]/sum;
+    sumx += x[i];
+  
+  x = x/sumx;
+ 
+  //return(x);
+  //for (i=0; i<n; i++)
+  //  x[i] = x[i]/sum;
 }
 
 // random sample a value
@@ -167,7 +174,7 @@ int random_in_range(int min, int max)
 
 // sample with weight from the tail of a vector and rotate the sampled one to the front
 
-int sample_rotate(int *index, double* weights, int start, int end)
+int sample_rotate(ivec index, vec weights, int start, int end)
 {
   // sample without replacement, will put sampled one to the front
   // will order weights vector in the same way
@@ -261,10 +268,10 @@ void swap_i(int* x, int i, int j)
 
 // quick sort function, for larger size
 
-int partition_d(double* keys,
+int partition_d(arma::vec& keys,
                 int low,
                 int high,
-                int* index)
+                arma::ivec& index)
 {
   double pivot = keys[high];    // pivot
   double dtemp;
@@ -305,10 +312,10 @@ int partition_d(double* keys,
   return (i + 1);
 }
 
-void qSort_dindex(double* keys,
+void qSort_dindex(arma::vec& keys,
                   int low,
                   int high,
-                  int* index)
+                  arma::ivec& index)
 {
   if (low < high)
   {
@@ -323,10 +330,10 @@ void qSort_dindex(double* keys,
 
 // for small size, use this
 
-void iSort_index(double* keys,
+void iSort_index(arma::vec& keys,
                  int low,
                  int high,
-                 int* index)
+                 arma::ivec& index)
 {
   bool bool_sorted = false;
   size_t itemp;
@@ -362,10 +369,10 @@ void iSort_index(double* keys,
 
 // quick sort function, for integer index
 
-int partition_i(int* keys,
+int partition_i(arma::ivec& keys,
                 int low,
                 int high,
-                int* index)
+                arma::ivec& index)
 {
   int pivot = keys[high];    // pivot
   int temp;
@@ -405,10 +412,10 @@ int partition_i(int* keys,
   return (i + 1);
 }
 
-void qSort_iindex(int* keys,
+void qSort_iindex(arma::ivec& keys,
                   int low,
                   int high,
-                  int* index)
+                  arma::ivec& index)
 {
   if (low < high)
   {
@@ -439,7 +446,7 @@ void swap_SURVCAT_w(SURVCAT_w* a, SURVCAT_w* b)
 
 // permutation
 
-void permute_i(int* x, int n)
+void permute_i(ivec &x, int n)
 {
   int i;
   int j;
@@ -456,7 +463,7 @@ void permute_i(int* x, int n)
 
 // variable pack
 
-double pack(const int nBits, const int *bits) // from Andy's rf package
+double pack(const int nBits, const ivec bits) // from Andy's rf package
 {
   int i;
   double value = bits[nBits - 1];
@@ -467,7 +474,7 @@ double pack(const int nBits, const int *bits) // from Andy's rf package
   return(value);
 }
 
-void unpack(const double pack, const int nBits, int *bits) // from Andy's rf package
+void unpack(const double pack, const int nBits, ivec bits) // from Andy's rf package
 {
   int i;
   double x = pack;

@@ -19,7 +19,9 @@
 //
 //  **********************************************************************
 
-# include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 //# include <Rdefines.h>
 //# include <R.h>
 //# include <Rmath.h>
@@ -29,22 +31,23 @@ using namespace Rcpp;
 # include "..//survForest.h"
 # include "..//utilities.h"
 
-void survForestBuild(const double** X,
-                     const int* Y,
-                     const int* Censor,
-                     const int* Ncat,
-                     const double* Interval,
+void survForestBuild(//const double** X,
+                     const std::vector<  colvec > X,
+                     const ivec Y,
+                     const ivec Censor,
+                     const ivec Ncat,
+                     const vec Interval,
                      const PARAMETERS* myPara,
-                     const double* subjectweight,
-                     const int* subj_id,
+                     const vec subjectweight,
+                     const ivec subj_id,
                      const int N,
-                     double* variableweight,
-                     int* var_id,
+                     vec variableweight,
+                     ivec var_id,
                      const int P,
                      TREENODE** Forest,
-                     int** ObsTrack,
-                     int** NodeRegi,
-                     double** VarImp,
+                     imat &ObsTrack,
+                     imat &NodeRegi,
+                     mat VarImp,
                      int use_cores)
 {
   int ntrees = myPara->ntrees;
@@ -77,12 +80,17 @@ void survForestBuild(const double** X,
 #pragma omp parallel for schedule(static) num_threads(use_cores)
   for (nt = 0; nt < ntrees; nt++) // fit all trees
   {
+    //R_DBP("Start tree %i\n",nt);
     int i;
     // in-bag and out-of-bag data indicator
     //int *inbagObs = (int *) malloc(size * sizeof(int));
-    int *inbagObs = new int[size];
-    //int *oobagObs = (int *) malloc(N * sizeof(int)); // initiate a longer one
-    int *oobagObs = new int[N]; // initiate a longer one
+    //int *inbagObs = new int[size];
+    uvec inbagObs(size);
+    ////int *oobagObs = (int *) malloc(N * sizeof(int)); // initiate a longer one
+    //int *oobagObs = new int[N]; // initiate a longer one
+    ivec oobagObs(N);
+    oobagObs.fill(0);
+    
 
     int OneSub;
     int oobag_n;
@@ -122,40 +130,44 @@ void survForestBuild(const double** X,
     // if the ObsTrack is zero, then its in the out-of-bag data
 
     for (i=0; i< size; i++)
-      ObsTrack[nt][inbagObs[i]]++;
+      ObsTrack(nt,inbagObs[i])++;
 
     //int * Ytemp = (int *) malloc(size * sizeof(int));
-    int * Ytemp = new int[size];
+    //int * Ytemp = new int[size];
+    ivec Ytemp(size);
     for (i = 0; i< size; i++) Ytemp[i] = Y[inbagObs[i]];
 
-    qSort_iindex(Ytemp, 0, size-1, inbagObs);
+    //qSort_iindex(Ytemp, 0, size-1, inbagObs);
+    inbagObs = sort_index(Ytemp);
+    Ytemp = sort(Ytemp);
 
     //TREENODE *TreeRoot = (TREENODE*) malloc(sizeof(TREENODE));
     TREENODE *TreeRoot = new TREENODE;
 
-    // index vector will get destroied within the tree fitting process.
+    // index vector will get destroyed within the tree fitting process.
     //int *inbagObs_copy = (int *) malloc(size * sizeof(int));
-    int *inbagObs_copy = new int[size];
+    //int *inbagObs_copy = new int[size];
+    ivec inbagObs_copy(size);
     for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
-
+    
     // start to build the
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P);
-
+    
     // covert nodes to tree and NodeRegi.
     int Node = 0;
 
     Forest[nt] = TreeRoot;
-
-    Record_NodeRegi(&Node, TreeRoot, NodeRegi[nt]);
+    
+    Record_NodeRegi(&Node, TreeRoot, NodeRegi.colptr(nt));//NodeRegi[nt]
 
     // summarize what observations are used in this tree
 
     //free(Ytemp);
-    delete[] Ytemp;
+    //delete[] Ytemp;
     //free(inbagObs);
-    delete[] inbagObs;
+    //delete[] inbagObs;
     //free(oobagObs);
-    delete[] oobagObs;
+    //delete[] oobagObs;
 
     if (importance)
     {
@@ -197,29 +209,38 @@ void Record_NodeRegi(int* Node, TREENODE* TreeRoot, int* NodeRegi_nt)
 }
 
 
-void Record_Tree(int* Node, TREENODE* TreeRoot, SEXP FittedTree, int TreeLength)
+void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength)
 {
   *Node += 1;
-
+  
   if (TreeRoot->Var == -1) // terminal node
   {
-    REAL(FittedTree)[*Node - 1] = -1;
-    REAL(FittedTree)[*Node - 1 + TreeLength] = NAN;
-    REAL(FittedTree)[*Node - 1 + 2*TreeLength] = NAN;
-    REAL(FittedTree)[*Node - 1 + 3*TreeLength] = NAN;
-    free(TreeRoot->NodeObs);
+    //REAL(FittedTree)[*Node - 1] = -1;
+    FittedTree(*Node-1,0)=-1;
+    //REAL(FittedTree)[*Node - 1 + TreeLength] = NAN;
+    FittedTree(*Node - 1 + TreeLength)=NAN;
+    //REAL(FittedTree)[*Node - 1 + 2*TreeLength] = NAN;
+    FittedTree(*Node - 1 + 2*TreeLength) = NAN;
+    //REAL(FittedTree)[*Node - 1 + 3*TreeLength] = NAN;
+    FittedTree(*Node - 1 + 3*TreeLength) = NAN;
+    //free(TreeRoot->NodeObs);
   }else{
 
-    REAL(FittedTree)[*Node - 1] = TreeRoot->Var + 1;
-    REAL(FittedTree)[*Node - 1 + TreeLength] = TreeRoot->Val;
+    //REAL(FittedTree)[*Node - 1] = TreeRoot->Var + 1;
+    FittedTree[*Node - 1] = TreeRoot->Var + 1;
+    //REAL(FittedTree)[*Node - 1 + TreeLength] = TreeRoot->Val;
+    FittedTree[*Node - 1 + TreeLength] = TreeRoot->Val;
 
     int currentNode = *Node - 1;
 
-    REAL(FittedTree)[currentNode + 2*TreeLength] = *Node + 1;
+    //REAL(FittedTree)[currentNode + 2*TreeLength] = *Node + 1;
+    FittedTree(currentNode + 2*TreeLength) = *Node + 1;
     Record_Tree(Node, TreeRoot->Left, FittedTree, TreeLength);
 
-    REAL(FittedTree)[currentNode + 3*TreeLength] = *Node + 1;
+    //REAL(FittedTree)[currentNode + 3*TreeLength] = *Node + 1;
+    FittedTree(currentNode + 3*TreeLength) = *Node + 1;
     Record_Tree(Node, TreeRoot->Right, FittedTree, TreeLength);
+
   }
 }
 

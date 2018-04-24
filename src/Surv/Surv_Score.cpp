@@ -21,8 +21,11 @@
 
 //# include <Rdefines.h>
 //# include <R.h>
+//# include <Rmath.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 # include <Rmath.h>
-#include <Rcpp.h>
 using namespace Rcpp;
 
 // my header file
@@ -31,7 +34,7 @@ using namespace Rcpp;
 
 // log rank and sup log rank for equal weight version
 
-double logrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count_Fail, int* Right_Count_Censor, double LeftN, double AllN, int timepoints)
+double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints)
 {
   double numerator = 0;
   double denominator = 0;
@@ -61,7 +64,7 @@ double logrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count_Fa
 
 
 
-double suplogrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count_Fail, int* Right_Count_Censor, double LeftN, double AllN, int timepoints)
+double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints)
 {
   double numerator = 0;
   double denominator = 0;
@@ -91,7 +94,7 @@ double suplogrank(int* Left_Count_Fail, int* Left_Count_Censor, int* Right_Count
 
 // log rank and sup log rank for subject weighted version
 
-double logrank_w(double* Left_Count_Fail, double* Left_Count_Censor, double* Right_Count_Fail, double* Right_Count_Censor, double LeftWeights, double AllWeights, int timepoints)
+double logrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftWeights, double AllWeights, int timepoints)
 {
   double numerator = 0;
   double denominator = 0;
@@ -120,7 +123,7 @@ double logrank_w(double* Left_Count_Fail, double* Left_Count_Censor, double* Rig
 
 
 
-double suplogrank_w(double* Left_Count_Fail, double* Left_Count_Censor, double* Right_Count_Fail, double* Right_Count_Censor, double LeftWeights, double AllWeights, int timepoints)
+double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftWeights, double AllWeights, int timepoints)
 {
   double numerator = 0;
   double denominator = 0;

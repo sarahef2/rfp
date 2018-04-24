@@ -21,7 +21,9 @@
 
 //# include <Rdefines.h>
 //# include <R.h>
-#include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 using namespace Rcpp;
 
 // my header file
@@ -30,17 +32,18 @@ using namespace Rcpp;
 
 void Surv_Find_A_Split(int* splitVar,
                        double* splitVal,
-                       const double** X,
-                       const int* Y,
-                       const int* Censor,
-                       const int* Ncat,
-                       const double* Interval,
+                       //const double** X,
+                       const std::vector<  colvec > X,
+                       const ivec Y,
+                       const ivec Censor,
+                       const ivec Ncat,
+                       const vec Interval,
                        const PARAMETERS* myPara,
-                       const double* subjectweight,
-                       int* useObs,
+                       const vec subjectweight,
+                       ivec useObs,
                        const int node_n,
-                       double* variableweight,
-                       int* variableindex,
+                       vec variableweight,
+                       ivec variableindex,
                        const int P)
 {
 
@@ -63,11 +66,13 @@ void Surv_Find_A_Split(int* splitVar,
 
   int timepoints = 0;
   //int* Y_collapse = (int *) malloc(node_n * sizeof(int));
-  int* Y_collapse = new int[node_n];
+  //int* Y_collapse = new int[node_n];
+  ivec Y_collapse(node_n);
   //int* Censor_collapse = (int *) malloc(node_n * sizeof(int));
-  int* Censor_collapse = new int[node_n];
-
-  collapse(Y, Censor, Y_collapse, Censor_collapse, useObs, node_n, &timepoints);
+  //int* Censor_collapse = new int[node_n];
+  ivec Censor_collapse(node_n);
+  
+  collapse(Y, Censor, Y_collapse, Censor_collapse, useObs, node_n, timepoints);
 
   int temp_var;
   double temp_val;
@@ -89,11 +94,11 @@ void Surv_Find_A_Split(int* splitVar,
     {
       if (use_sub_weight)
       {
-        Surv_One_Split_Cat_W(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight, Ncat[temp_var],
+        Surv_One_Split_Cat_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight, Ncat[temp_var],
                              timepoints, split_gen, split_rule, nsplit, nmin, alpha);
       }else{
 
-        Surv_One_Split_Cat(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, Ncat[temp_var],
+        Surv_One_Split_Cat(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, Ncat[temp_var],
                            timepoints, split_gen, split_rule, nsplit, mincount);
       }
 
@@ -101,12 +106,11 @@ void Surv_Find_A_Split(int* splitVar,
 
       if (use_sub_weight)
       {
-        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight,
+        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight,
                               timepoints, split_gen, split_rule, nsplit, nmin, alpha);
-        //R_DBP("Variable %i with val %i\n", temp_var,temp_score);
-        
+
       }else{
-        Surv_One_Split_Cont(&temp_val, &temp_score, (const int*) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
+        Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
                             timepoints, split_gen, split_rule, nsplit, mincount);
       }
     }
@@ -123,8 +127,8 @@ void Surv_Find_A_Split(int* splitVar,
     }
   }
 
-  delete[] Y_collapse;
-  delete[] Censor_collapse;
+  //delete[] Y_collapse;
+  //delete[] Censor_collapse;
 
   return;
 }
@@ -132,7 +136,7 @@ void Surv_Find_A_Split(int* splitVar,
 
 // collapse Y into contiguous integers, Y will always be in an increasing order
 
-void collapse(const int* Y, const int* Censor, int* Y_collapse, int* Censor_collapse, const int* useObs, int node_n, int* timepoints)
+void collapse(const ivec Y, const ivec Censor, ivec &Y_collapse, ivec &Censor_collapse, const ivec useObs, int node_n, int &timepoints)
 {
   int i=0;
 
@@ -178,5 +182,6 @@ void collapse(const int* Y, const int* Censor, int* Y_collapse, int* Censor_coll
     Censor_collapse[i] = Censor[useObs[i]];
   }
 
-  *timepoints = counter;
+  //*timepoints = counter;
+  timepoints = counter;
 }

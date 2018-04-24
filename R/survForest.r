@@ -185,6 +185,7 @@ survForest <- function(x, y, censor,
   #             variable.weight,
   #             parameters,
   #             as.integer(use.cores))
+  
   fit=survForestFit(x,y.point,censor,ncat,interval,subject.weight,variable.weight,parameters,as.integer(use.cores))
 
   fit[["ncat"]] = ncat

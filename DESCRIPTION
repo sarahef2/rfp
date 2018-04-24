@@ -9,5 +9,5 @@ Description: Fit various surival tree and forest models using kernel averaging. 
 License: GPL (>= 2)
 URL: https://sites.google.com/site/teazrq/
 Imports: Rcpp (>= 0.12.16)
-LinkingTo: Rcpp
+LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1

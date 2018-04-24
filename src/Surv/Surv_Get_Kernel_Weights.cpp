@@ -21,7 +21,9 @@
 
 //# include <Rdefines.h>
 //# include <R.h>
-#include <Rcpp.h>
+# include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
+//# include <Rcpp.h>
 using namespace Rcpp;
 
 // my header file
