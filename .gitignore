@@ -4,7 +4,8 @@
 .Ruserdata
 src/*.o
 src/Surv/*.o
-**/*.o
+**/*.
+**/**/*.o
 *.o
 *.[oa]
 *.[o]
