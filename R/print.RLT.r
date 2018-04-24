@@ -1,5 +1,5 @@
-#' @title print.survForest
-#' @description Print a survForest object
+#' @title print.RLT
+#' @description Print a RLT object
 #' @param x A fitted survForest object
 #' @param ... ...
 #' @examples
@@ -9,7 +9,20 @@
 #' fit = survForest(x, y, c, ntrees = 10)
 #' fit
 
-print.survForest<- function(x, ...)
+print.RLT<- function(x, ...)
+{
+  if (class(x)[3] == "survForest")
+    survForest_print(x, ...)
+}
+
+
+#' @title survForest_print
+#' @description The print function for survival forest
+#' @param x A fitted survForest object
+#' @param ... ...
+#' @keywords internal
+
+survForest_print <- function(x, ...)
 {
   if (class(x)[2] == "fit")
     #.Call("survForestPrint", x$parameters)
@@ -22,4 +35,3 @@ print.survForest<- function(x, ...)
     cat(paste("Maximum time point:", round(max(x$timepoints), 6), "\n"))
   }
 }
-

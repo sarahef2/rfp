@@ -1,4 +1,4 @@
-#' @title predict.survForest
+#' @title predict.RLT
 #' @description The prediction function for personalized survival forest
 #' @param object A fitted RLT object
 #' @param testx Testing data
@@ -12,7 +12,24 @@
 #' fit = survForest(x, y, c, ntrees = 10)
 #' predict(fit, x)
 
-predict.survForest <- function(object, testx, use.cores = 0, ...)
+predict.RLT <- function(object, testx, use.cores = 0, ...)
+{
+  if (class(object)[3] == "survForest" & class(object)[2] == "fit")
+    survForest_predict(object, testx, use.cores = 0, ...)
+  
+  
+}
+
+#' @title survForest_predict
+#' @description The prediction function for survival forest
+#' @param object A fitted RLT object
+#' @param testx Testing data
+#' @param use.cores number of cores (by default use number of threads -1)
+#' @param ... ...
+#' @return The predicted values.
+#' @keywords internal
+
+survForest_predict <- function(object, testx, use.cores = 0, ...)
 {
   # check test data
   if (missing(testx)) stop("testx is missing")
@@ -51,7 +68,7 @@ predict.survForest <- function(object, testx, use.cores = 0, ...)
 
   pred[['timepoints']] = c(object$timepoints)
 
-  class(pred) <- c("survForest", "predict")
+  class(pred) <- c("RLT", "predict", "survForest")
 
   return(pred)
 }

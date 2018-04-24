@@ -202,6 +202,6 @@ survForest <- function(x, y, censor,
   fit[["timepoints"]] = timepoints
   fit[["y.point"]] = y.point
 
-  class(fit) <- c("survForest", "fit")
+  class(fit) <- c("RLT", "fit", "survForest")
   return(fit)
 }
