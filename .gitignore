@@ -4,5 +4,7 @@
 .Ruserdata
 src/*.o
 src/Surv/*.o
+*.o
 src/*.dll
 src/Surv/*.dll
+*.dll
