@@ -29,6 +29,7 @@
 using namespace Rcpp;
 using namespace arma;
 
+
 #ifdef _OPENMP
 #include <omp.h>
 #define OMPMSG(...)

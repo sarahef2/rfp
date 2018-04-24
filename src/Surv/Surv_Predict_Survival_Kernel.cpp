@@ -71,9 +71,7 @@ void PredictSurvivalKernel2(const double** X,
     //remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
     remove_matrix[i] = new double[Nfail+1];
 
-#pragma omp parallel num_threads(use_cores)
-{
-#pragma omp for schedule(guided)
+#pragma omp parallel for schedule(guided) num_threads(use_cores)
   for (i = 0; i < testN; i++)
   {
     //double* weights = (double *) calloc(N, sizeof(double));
@@ -112,9 +110,6 @@ void PredictSurvivalKernel2(const double** X,
     //free(weights);
     delete[] weights;
   }
-#pragma omp barrier
-
-}
 
 
 return;
@@ -158,9 +153,7 @@ void PredictSurvivalKernel(const double** X,
   for (i = 0; i < testN; i++)
     remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
   
-#pragma omp parallel num_threads(use_cores)
-{
-#pragma omp for schedule(guided)
+#pragma omp parallel for schedule(guided) num_threads(use_cores)
   for (i = 0; i < testN; i++)
   {
     double* weights = (double *) calloc(N, sizeof(double));
@@ -197,9 +190,6 @@ void PredictSurvivalKernel(const double** X,
     
     free(weights);
   }
-#pragma omp barrier
-  
-}
 
 
 return;

@@ -27,6 +27,7 @@
 
 # include "utilities.h"
 
+
 #ifndef survForest_Fun
 #define survForest_Fun
 
@@ -53,7 +54,7 @@ void survForestBuild(//const double** X,
 
 void push_censor_front(int* inbagObs, int* Y, int* Censor, int size);
 
-void Record_NodeRegi(int* Node, TREENODE* TreeRoot, int* NodeRegi_nt);
+void Record_NodeRegi(int* Node, TREENODE* TreeRoot, imat& NodeRegi, int nt);
 
 void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength);
 

@@ -158,7 +158,7 @@ void survForestBuild(//const double** X,
 
     Forest[nt] = TreeRoot;
     
-    Record_NodeRegi(&Node, TreeRoot, NodeRegi.colptr(nt));//NodeRegi[nt]
+    Record_NodeRegi(&Node, TreeRoot, NodeRegi, nt);//NodeRegi[nt]
 
     // summarize what observations are used in this tree
 
@@ -191,21 +191,20 @@ void survForestBuild(//const double** X,
 
 
 
-
-void Record_NodeRegi(int* Node, TREENODE* TreeRoot, int* NodeRegi_nt)
+void Record_NodeRegi(int* Node, TREENODE* TreeRoot, imat& NodeRegi, int nt)
 {
   *Node += 1;
 
   if (TreeRoot->Var == -1) // terminal node
   {
     for (int i = 0; i< TreeRoot->NodeSize; i++){
-      NodeRegi_nt[TreeRoot->NodeObs[i]] = *Node;
+      NodeRegi(nt, TreeRoot->NodeObs[i]) = *Node;
     }
   }else{
 
-    Record_NodeRegi(Node, TreeRoot->Left, NodeRegi_nt);
+    Record_NodeRegi(Node, TreeRoot->Left, NodeRegi, nt);
 
-    Record_NodeRegi(Node, TreeRoot->Right, NodeRegi_nt);
+    Record_NodeRegi(Node, TreeRoot->Right, NodeRegi, nt);
   }
 }
 
