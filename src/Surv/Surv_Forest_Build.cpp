@@ -198,8 +198,9 @@ void Record_NodeRegi(int* Node, TREENODE* TreeRoot, int* NodeRegi_nt)
 
   if (TreeRoot->Var == -1) // terminal node
   {
-    for (int i = 0; i< TreeRoot->NodeSize; i++)
+    for (int i = 0; i< TreeRoot->NodeSize; i++){
       NodeRegi_nt[TreeRoot->NodeObs[i]] = *Node;
+    }
   }else{
 
     Record_NodeRegi(Node, TreeRoot->Left, NodeRegi_nt);

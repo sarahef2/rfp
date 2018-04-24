@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // survForestFit
 List survForestFit(arma::mat datasetX_R, arma::ivec datasetY_R, arma::ivec datasetCensor_R, arma::ivec ncat_R, arma::vec interval_R, arma::vec subjectweight_R, arma::vec variableweight_R, List parameters_R, int usecores_R);
-RcppExport SEXP _survForest_survForestFit(SEXP datasetX_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP ncat_RSEXP, SEXP interval_RSEXP, SEXP subjectweight_RSEXP, SEXP variableweight_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
+RcppExport SEXP _RLT_survForestFit(SEXP datasetX_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP ncat_RSEXP, SEXP interval_RSEXP, SEXP subjectweight_RSEXP, SEXP variableweight_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // survForestPrint
 void survForestPrint(List parameters_R);
-RcppExport SEXP _survForest_survForestPrint(SEXP parameters_RSEXP) {
+RcppExport SEXP _RLT_survForestPrint(SEXP parameters_RSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type parameters_R(parameters_RSEXP);
@@ -37,7 +37,7 @@ END_RCPP
 }
 // survForestPredict
 List survForestPredict(SEXP testsetX_R, SEXP FittedForest_R, SEXP datasetY_R, SEXP datasetCensor_R, SEXP datasetNcat_R, SEXP subjectweight_R, SEXP ObsTrackMat_R, SEXP NodeRegiMat_R, SEXP parameters_R, SEXP usecores_R);
-RcppExport SEXP _survForest_survForestPredict(SEXP testsetX_RSEXP, SEXP FittedForest_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP datasetNcat_RSEXP, SEXP subjectweight_RSEXP, SEXP ObsTrackMat_RSEXP, SEXP NodeRegiMat_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
+RcppExport SEXP _RLT_survForestPredict(SEXP testsetX_RSEXP, SEXP FittedForest_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP datasetNcat_RSEXP, SEXP subjectweight_RSEXP, SEXP ObsTrackMat_RSEXP, SEXP NodeRegiMat_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -57,13 +57,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_survForest_survForestFit", (DL_FUNC) &_survForest_survForestFit, 9},
-    {"_survForest_survForestPrint", (DL_FUNC) &_survForest_survForestPrint, 1},
-    {"_survForest_survForestPredict", (DL_FUNC) &_survForest_survForestPredict, 10},
+    {"_RLT_survForestFit", (DL_FUNC) &_RLT_survForestFit, 9},
+    {"_RLT_survForestPrint", (DL_FUNC) &_RLT_survForestPrint, 1},
+    {"_RLT_survForestPredict", (DL_FUNC) &_RLT_survForestPredict, 10},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_survForest(DllInfo *dll) {
+RcppExport void R_init_RLT(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

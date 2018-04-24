@@ -19,6 +19,8 @@
 //
 //  **********************************************************************
 
+//New Comment
+
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 //# include <Rcpp.h>

@@ -2,14 +2,14 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 survForestFit <- function(datasetX_R, datasetY_R, datasetCensor_R, ncat_R, interval_R, subjectweight_R, variableweight_R, parameters_R, usecores_R) {
-    .Call(`_survForest_survForestFit`, datasetX_R, datasetY_R, datasetCensor_R, ncat_R, interval_R, subjectweight_R, variableweight_R, parameters_R, usecores_R)
+    .Call(`_RLT_survForestFit`, datasetX_R, datasetY_R, datasetCensor_R, ncat_R, interval_R, subjectweight_R, variableweight_R, parameters_R, usecores_R)
 }
 
 survForestPrint <- function(parameters_R) {
-    invisible(.Call(`_survForest_survForestPrint`, parameters_R))
+    invisible(.Call(`_RLT_survForestPrint`, parameters_R))
 }
 
 survForestPredict <- function(testsetX_R, FittedForest_R, datasetY_R, datasetCensor_R, datasetNcat_R, subjectweight_R, ObsTrackMat_R, NodeRegiMat_R, parameters_R, usecores_R) {
-    .Call(`_survForest_survForestPredict`, testsetX_R, FittedForest_R, datasetY_R, datasetCensor_R, datasetNcat_R, subjectweight_R, ObsTrackMat_R, NodeRegiMat_R, parameters_R, usecores_R)
+    .Call(`_RLT_survForestPredict`, testsetX_R, FittedForest_R, datasetY_R, datasetCensor_R, datasetNcat_R, subjectweight_R, ObsTrackMat_R, NodeRegiMat_R, parameters_R, usecores_R)
 }
 
