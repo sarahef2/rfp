@@ -5,6 +5,8 @@
 src/*.o
 src/Surv/*.o
 **/*.o
+*.o
+*.[oa]
 src/*.dll
 src/Surv/*.dll
 *.dll
