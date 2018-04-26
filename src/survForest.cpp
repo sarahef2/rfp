@@ -92,9 +92,9 @@ List survForestFit(arma::mat datasetX_R,
 
   TREENODE **Forest = new TREENODE*[ntrees];
 
-  imat ObsTrack(ntrees,N);
+  imat ObsTrack(N,ntrees);
   ObsTrack.fill(0);
-  imat NodeRegi(ntrees,N);
+  imat NodeRegi(N,ntrees);
   NodeRegi.fill(0);
   mat VarImp(ntrees,N);
   
@@ -182,143 +182,169 @@ void survForestPrint(List parameters_R)
 
 // predict
 // [[Rcpp::export()]]
- List survForestPredict(SEXP testsetX_R,
-                        SEXP FittedForest_R,
-                        SEXP datasetY_R,
-                        SEXP datasetCensor_R,
-                        SEXP datasetNcat_R,
-                        SEXP subjectweight_R,
-                        SEXP ObsTrackMat_R,
-                        SEXP NodeRegiMat_R,
-                        SEXP parameters_R,
-                        SEXP usecores_R)
+ arma::mat survForestPredict(arma::mat testsetX_R,
+                        List FittedForest_R,
+                        arma::imat datasetY_R,
+                        arma::ivec datasetCensor_R,
+                        arma::ivec datasetNcat_R,
+                        arma::vec subjectweight_R,
+                        arma::imat ObsTrackMat_R,
+                        arma::imat NodeRegiMat_R,
+                        List parameters_R,
+                        int usecores_R)
  {
 //   
-//   // copy parameters and check
-//   //PARAMETERS *myPara = (PARAMETERS*) malloc(sizeof(PARAMETERS));
-//   PARAMETERS* myPara = new PARAMETERS();
-//   copyParameters(myPara, parameters_R);
-//   
-//   //// create data objects
-//   int use_cores = INTEGER(usecores_R)[0];
-//   if (use_cores <= 0) use_cores = imax(1, omp_get_max_threads() - 1);
-//   
-//   int N = myPara->N;
-//   int P = myPara->P;
-//   int ntrees = myPara->ntrees;
-//   int Nfail = myPara->Nfail;
-//   
-//   SEXP dataX_dim = Rf_getAttrib(testsetX_R, R_DimSymbol);
-//   int testN = INTEGER(dataX_dim)[0];
-//   
-//   int i;
-//   int j;
-//   int nt = 0;
-//   
-//   // get X, Y, Censor
-//   
-//   //double **testX = (double **) malloc(P * sizeof(double *));
-//   double **testX = new double*[P];
-//   //if (testX == NULL) error("Unable to malloc testX");
-//   if (testX == NULL) stop("Unable to malloc testX");
-//   for (j = 0; j < P; j++)
-//     testX[j] = &REAL(testsetX_R)[j*testN];
-//   
-//   const int *Y = INTEGER(datasetY_R);
-//   const int *Censor = INTEGER(datasetCensor_R);
-//   const int *Ncat = INTEGER(datasetNcat_R);
-//   
-//   const double *subjectweight = REAL(subjectweight_R);
-//   
-//   // get tree matrix
-//   
-//   int TreeWidth = 4;
-//   int TreeLength;
-//   
-//   //double ***tree_matrix = (double ***) malloc(ntrees * sizeof(double **));
-//   double ***tree_matrix = new double**[ntrees];
-//   //if (tree_matrix == NULL) error("Unable to malloc for tree_matrix");
-//   if (tree_matrix == NULL) stop("Unable to malloc for tree_matrix");
-//   
-//   for (nt=0; nt<ntrees; nt++)
-//   {
-//     //tree_matrix[nt] = (double **) malloc(TreeWidth  * sizeof(double*));
-//     tree_matrix[nt] = new double*[TreeWidth];
-//     //if (tree_matrix[nt] == NULL) error("Unable to malloc for tree_matrix");
-//     if (tree_matrix[nt] == NULL) stop("Unable to malloc for tree_matrix");
-//     
-//     TreeLength = INTEGER(Rf_getAttrib(VECTOR_ELT(FittedForest_R, nt), R_DimSymbol))[0];
-//     
-//     for (i = 0; i < TreeWidth; i++)
-//       tree_matrix[nt][i] = &REAL(VECTOR_ELT(FittedForest_R, nt))[i*TreeLength];
-//   }
-//   
-//   // get ObsTrack
-//   
-//   //int **ObsTrack = (int **) malloc(ntrees * sizeof(int *));
-//   int **ObsTrack = new int*[ntrees];
-//   //if (ObsTrack == NULL) error("Unable to malloc ObsTrack");
-//   if (ObsTrack == NULL) stop("Unable to malloc ObsTrack");
-//   for (nt = 0; nt < ntrees; nt++)
-//     ObsTrack[nt] = &INTEGER(ObsTrackMat_R)[nt*N];
-//   
-//   // get NodeRegi
-//   //int **NodeRegi = (int **) malloc(ntrees * sizeof(int *));
-//   int **NodeRegi = new int*[ntrees];
-//   //if (NodeRegi == NULL) error("Unable to malloc NodeRegi");
-//   if (NodeRegi == NULL) stop("Unable to malloc NodeRegi");
-//   for (nt = 0; nt < ntrees; nt++)
-//     NodeRegi[nt] = &INTEGER(NodeRegiMat_R)[nt*N];
-//   
-//   
-//   SEXP SurvMat;
-//   PROTECT(SurvMat = Rf_allocMatrix(REALSXP, Nfail+1, testN));
-//   
-//   //double **surv_matrix = (double **) malloc(testN * sizeof(double *));
-//   double **surv_matrix = new double*[testN];
-//   //if (surv_matrix == NULL) error("Unable to malloc surv_matrix");
-//   if (surv_matrix == NULL) stop("Unable to malloc surv_matrix");
-//   for (i = 0; i < testN; i++)
-//   {
-//     surv_matrix[i] = &REAL(SurvMat)[i*(Nfail+1)];
-//     for(j=0; j<= Nfail; j++)
-//       surv_matrix[i][j] = 0;
-//   }
-//   
-//   PredictSurvivalKernel((const double**) testX,
-//                         Y,
-//                         Censor,
-//                         Ncat,
-//                         subjectweight,
-//                         (const double***) tree_matrix,
-//                         (const int**) ObsTrack,
-//                         (const int**) NodeRegi,
-//                         surv_matrix,
-//                         (const PARAMETERS*) myPara,
-//                         testN,
-//                         use_cores);
-//   
-//   
-//   //free(testX);
-//   delete[] testX;
-//   
-//   for (nt = 0; nt < ntrees; nt++)
-//     //free(tree_matrix[nt]);
-//     delete[] tree_matrix[nt];
-//   //free(tree_matrix);
-//   delete[] tree_matrix;
-//   
-//   //free(NodeRegi);
-//   delete[] NodeRegi;
-//   //free(ObsTrack);
-//   delete[] ObsTrack;
-//   //free(surv_matrix);
-//   delete[] surv_matrix;
-//   
-//   UNPROTECT(1);
-//   
-//   return SurvMat;
-     return List();//Placeholder
+  // copy parameters and check
+  //PARAMETERS *myPara = (PARAMETERS*) malloc(sizeof(PARAMETERS));
+  PARAMETERS* myPara = new PARAMETERS();
+  copyParameters(myPara, parameters_R);
+
+  //// create data objects
+  //int use_cores = INTEGER(usecores_R)[0];
+  int use_cores = usecores_R;
+  if (use_cores <= 0) use_cores = imax(1, omp_get_max_threads() - 1);
+
+  int N = myPara->N;
+  int P = myPara->P;
+  int ntrees = myPara->ntrees;
+  int Nfail = myPara->Nfail;
+
+  //SEXP dataX_dim = Rf_getAttrib(testsetX_R, R_DimSymbol);
+  //int testN = INTEGER(dataX_dim)[0];
+  int testN = testsetX_R.n_rows;
+
+  int i;
+  int j;
+  int nt = 0;
+
+  // get X, Y, Censor
+
+  //double **testX = (double **) malloc(P * sizeof(double *));
+  //double **testX = new double*[P];
+  //if (testX == NULL) error("Unable to malloc testX");
+  //if (testX == NULL) stop("Unable to malloc testX");
+  //for (j = 0; j < P; j++)
+  //  testX[j] = &REAL(testsetX_R)[j*testN];
+
+  std::vector< colvec > testX(P, colvec(testN));
+
+  for (j = 0; j < P; j++) {
+    testX[j] = conv_to<colvec>::from(testsetX_R.col(j));
+  };
+
+  //const int *Y = INTEGER(datasetY_R);
+  //const int *Censor = INTEGER(datasetCensor_R);
+  //const int *Ncat = INTEGER(datasetNcat_R);
+  const ivec Y = datasetY_R;
+  const ivec Censor= datasetCensor_R;
+  const ivec Ncat=datasetNcat_R;
+
+  //const double *subjectweight = REAL(subjectweight_R);
+  const vec subjectweight = subjectweight_R;
+
+  // get tree matrix
+
+  int TreeWidth = 4;
+  int TreeLength;
+
+  //double ***tree_matrix = (double ***) malloc(ntrees * sizeof(double **));
+  //double ***tree_matrix = new double**[ntrees];
+  std::vector< mat > tree_matrix(ntrees);
+  //if (tree_matrix == NULL) error("Unable to malloc for tree_matrix");
+  //if (tree_matrix == NULL) stop("Unable to malloc for tree_matrix");
+
+  for (nt=0; nt<ntrees; nt++)
+  {
+    //tree_matrix[nt] = (double **) malloc(TreeWidth  * sizeof(double*));
+    //tree_matrix[nt] = new double*[TreeWidth];
+    //if (tree_matrix[nt] == NULL) error("Unable to malloc for tree_matrix");
+    //if (tree_matrix[nt] == NULL) stop("Unable to malloc for tree_matrix");
+
+    //TreeLength = INTEGER(Rf_getAttrib(VECTOR_ELT(FittedForest_R, nt), R_DimSymbol))[0];
+    //TreeLength=FittedForest_R[nt].size;
+    
+    tree_matrix[nt] = as<mat>(FittedForest_R[nt]);
+
+    //for (i = 0; i < TreeWidth; i++)
+    //  tree_matrix[nt][i] = &REAL(VECTOR_ELT(FittedForest_R, nt))[i*TreeLength];
+  }
+
+  // get ObsTrack
+
+  //int **ObsTrack = (int **) malloc(ntrees * sizeof(int *));
+  //int **ObsTrack = new int*[ntrees];
+  imat ObsTrack(N,ntrees);
+  //if (ObsTrack == NULL) error("Unable to malloc ObsTrack");
+  //if (ObsTrack == NULL) stop("Unable to malloc ObsTrack");
+  //for (nt = 0; nt < ntrees; nt++)
+  //  ObsTrack[nt] = &INTEGER(ObsTrackMat_R)[nt*N];
+  ObsTrack=ObsTrackMat_R;
+
+  // get NodeRegi
+  //int **NodeRegi = (int **) malloc(ntrees * sizeof(int *));
+  //int **NodeRegi = new int*[ntrees];
+  imat NodeRegi(N,ntrees);
+  //if (NodeRegi == NULL) error("Unable to malloc NodeRegi");
+  //if (NodeRegi == NULL) stop("Unable to malloc NodeRegi");
+  //for (nt = 0; nt < ntrees; nt++)
+  //  NodeRegi[nt] = &INTEGER(NodeRegiMat_R)[nt*N];
+  NodeRegi=NodeRegiMat_R;
+
+
+  //SEXP SurvMat;
+  //mat SurvMat(Nfail+1,testN);
+  //PROTECT(SurvMat = Rf_allocMatrix(REALSXP, Nfail+1, testN));
+
+  //double **surv_matrix = (double **) malloc(testN * sizeof(double *));
+  //double **surv_matrix = new double*[testN];
+  mat surv_matrix(Nfail+1,testN);
+  surv_matrix.fill(0);
+  //if (surv_matrix == NULL) error("Unable to malloc surv_matrix");
+  //if (surv_matrix == NULL) stop("Unable to malloc surv_matrix");
+  
+  //The following loop should be unnecessary after filling the matrix with 0's
+  //for (i = 0; i < testN; i++)
+  //{
+    //surv_matrix[i] = &REAL(SurvMat)[i*(Nfail+1)];//What is this line supposed to do?
+    //for(j=0; j<= Nfail; j++)
+      //surv_matrix(i,j) = 0;
+      //surv_matrix[i][j] = 0;
+  //}
+
+  PredictSurvivalKernel((const std::vector< colvec >) testX,
+                        Y,
+                        Censor,
+                        Ncat,
+                        subjectweight,
+                        (const std::vector< mat >) tree_matrix,
+                        (const imat) ObsTrack,
+                        (const imat) NodeRegi,
+                        surv_matrix,
+                        (const PARAMETERS*) myPara,
+                        testN,
+                        use_cores);
+
+
+  //free(testX);
+  //delete[] testX;
+
+  //for (nt = 0; nt < ntrees; nt++)
+    //free(tree_matrix[nt]);
+    //delete[] tree_matrix[nt];
+  //free(tree_matrix);
+  //delete[] tree_matrix;
+
+  //free(NodeRegi);
+  //delete[] NodeRegi;
+  //free(ObsTrack);
+  //delete[] ObsTrack;
+  //free(surv_matrix);
+  //delete[] surv_matrix;
+
+  //UNPROTECT(1);
+
+  return surv_matrix;//SurvMat;
+  //   return List();//Placeholder
  }
  
  

@@ -30,100 +30,103 @@ using namespace Rcpp;
 # include "..//survForest.h"
 # include "..//utilities.h"
 
-void PredictSurvivalKernel2(const double** X,
-                           const int* Y,
-                           const int* Censor,
-                           const int* Ncat,
-                           const double* subjectweight,
-                           const double*** tree_matrix,
-                           const int** ObsTrack,
-                           const int** NodeRegi,
-                           double** surv_matrix,
-                           const PARAMETERS* myPara,
-                           int testN,
-                           int use_cores)
-{
-  int N = myPara->N;
-  int Nfail = myPara->Nfail;
-  int ntrees = myPara->ntrees;
-  int verbose = myPara->verbose;
-  int use_sub_weight = myPara->use_sub_weight;
-  int i;
+// void PredictSurvivalKernel2(const std::vector< colvec > X,
+//                            const ivec Y,
+//                            const ivec Censor,
+//                            const ivec Ncat,
+//                            const vec subjectweight,
+//                            const std::vector< mat > tree_matrix,
+//                            const imat ObsTrack,
+//                            const imat NodeRegi,
+//                            mat &surv_matrix,
+//                            const PARAMETERS* myPara,
+//                            int testN,
+//                            int use_cores)
+// {
+//   int N = myPara->N;
+//   int Nfail = myPara->Nfail;
+//   int ntrees = myPara->ntrees;
+//   int verbose = myPara->verbose;
+//   int use_sub_weight = myPara->use_sub_weight;
+//   int i;
+// 
+//   // parallel computing... set cores
+// 
+//   use_cores = imax(1, use_cores);
+// 
+//   int haveCores = omp_get_max_threads();
+// 
+//   if(use_cores > haveCores)
+//   {
+//     if (verbose) Rprintf("Do not have %i cores, use maximum %i cores. \n", use_cores, haveCores);
+//     use_cores = haveCores;
+//   }
+// 
+//   // matrix keep track of the sum of fail and censor at each time point
+//   //double **remove_matrix = (double **) malloc(testN * sizeof(double *));
+//   //double **remove_matrix =new double*[testN];
+//   mat remove_matrix(Nfail+1,testN);
+//   remove_matrix.fill(0);
+//   //if (remove_matrix == NULL) error("Unable to malloc remove_matrix");
+//   //if (remove_matrix == NULL) stop("Unable to malloc remove_matrix");
+//   //for (i = 0; i < testN; i++)
+//     //remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
+//     //remove_matrix[i] = new double[Nfail+1];
+// 
+// #pragma omp parallel for schedule(guided) num_threads(use_cores)
+//   for (i = 0; i < testN; i++)
+//   {
+//     //double* weights = (double *) calloc(N, sizeof(double));
+//     //double* weights = new double[N];
+//     vec weights(N);
+//     int j, nt;
+// 
+//     if (use_sub_weight)
+//       for (nt = 0; nt < ntrees; nt++)
+//         Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], subjectweight, weights, N);
+//     else
+//       for (nt = 0; nt < ntrees; nt++)
+//         Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], weights, N);
+// 
+//     double weights_sum = 0;
+// 
+//     for (j = 0; j < N; j++)
+//     {
+//       remove_matrix[i][Y[j]] += weights[j];
+// 
+//       if (Censor[j] == 1)
+//         surv_matrix[i][Y[j]] += weights[j];
+// 
+//       weights_sum += weights[j];
+//     }
+// 
+//     surv_matrix[i][0] = 1;
+//     weights_sum -= remove_matrix[i][0];
+// 
+//     // KM survival function
+//     for (j = 1; j <= Nfail; j++)
+//     {
+//       surv_matrix[i][j] = surv_matrix[i][j-1] * (1 - surv_matrix[i][j]/weights_sum);
+//       weights_sum -= remove_matrix[i][j];
+//     }
+// 
+//     //free(weights);
+//     //delete[] weights;
+//   }
+// 
+// 
+// return;
+// }
 
-  // parallel computing... set cores
-
-  use_cores = imax(1, use_cores);
-
-  int haveCores = omp_get_max_threads();
-
-  if(use_cores > haveCores)
-  {
-    if (verbose) Rprintf("Do not have %i cores, use maximum %i cores. \n", use_cores, haveCores);
-    use_cores = haveCores;
-  }
-
-  // matrix keep track of the sum of fail and censor at each time point
-  //double **remove_matrix = (double **) malloc(testN * sizeof(double *));
-  double **remove_matrix =new double*[testN];
-  //if (remove_matrix == NULL) error("Unable to malloc remove_matrix");
-  if (remove_matrix == NULL) stop("Unable to malloc remove_matrix");
-  for (i = 0; i < testN; i++)
-    //remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
-    remove_matrix[i] = new double[Nfail+1];
-
-#pragma omp parallel for schedule(guided) num_threads(use_cores)
-  for (i = 0; i < testN; i++)
-  {
-    //double* weights = (double *) calloc(N, sizeof(double));
-    double* weights = new double[N];
-    int j, nt;
-
-    if (use_sub_weight)
-      for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], subjectweight, weights, N);
-    else
-      for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], weights, N);
-
-    double weights_sum = 0;
-
-    for (j = 0; j < N; j++)
-    {
-      remove_matrix[i][Y[j]] += weights[j];
-
-      if (Censor[j] == 1)
-        surv_matrix[i][Y[j]] += weights[j];
-
-      weights_sum += weights[j];
-    }
-
-    surv_matrix[i][0] = 1;
-    weights_sum -= remove_matrix[i][0];
-
-    // KM survival function
-    for (j = 1; j <= Nfail; j++)
-    {
-      surv_matrix[i][j] = surv_matrix[i][j-1] * (1 - surv_matrix[i][j]/weights_sum);
-      weights_sum -= remove_matrix[i][j];
-    }
-
-    //free(weights);
-    delete[] weights;
-  }
-
-
-return;
-}
-
-void PredictSurvivalKernel(const double** X,
-                           const int* Y,
-                           const int* Censor,
-                           const int* Ncat,
-                           const double* subjectweight,
-                           const double*** tree_matrix,
-                           const int** ObsTrack,
-                           const int** NodeRegi,
-                           double** surv_matrix,
+void PredictSurvivalKernel(const std::vector< colvec > X,
+                           const ivec Y,
+                           const ivec Censor,
+                           const ivec Ncat,
+                           const vec subjectweight,
+                           const std::vector< mat > tree_matrix,
+                           const imat ObsTrack,
+                           const imat NodeRegi,
+                           mat &surv_matrix,
                            const PARAMETERS* myPara,
                            int testN,
                            int use_cores){
@@ -148,47 +151,49 @@ void PredictSurvivalKernel(const double** X,
   }
   
   // matrix keep track of the sum of fail and censor at each time point
-  double **remove_matrix = (double **) malloc(testN * sizeof(double *));
+  //double **remove_matrix = (double **) malloc(testN * sizeof(double *));
+  mat remove_matrix(Nfail+1,testN);
   //if (remove_matrix == NULL) error("Unable to malloc remove_matrix");
-  for (i = 0; i < testN; i++)
-    remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
+  //for (i = 0; i < testN; i++)
+  //  remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
   
 #pragma omp parallel for schedule(guided) num_threads(use_cores)
   for (i = 0; i < testN; i++)
   {
-    double* weights = (double *) calloc(N, sizeof(double));
+    //double* weights = (double *) calloc(N, sizeof(double));
+    vec weights(N);
     int j, nt;
     
     if (use_sub_weight)
       for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], subjectweight, weights, N);
+        Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi.col(nt), subjectweight, weights, N);
     else
       for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack[nt], NodeRegi[nt], weights, N);
+        Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi.col(nt), weights, N);
     
     double weights_sum = 0;
     
     for (j = 0; j < N; j++)
     {
-      remove_matrix[i][Y[j]] += weights[j];
+      remove_matrix(Y[j],i) += weights[j];//[i][Y[j]]
       
       if (Censor[j] == 1)
-        surv_matrix[i][Y[j]] += weights[j];
+        surv_matrix(Y[j],i) += weights[j];
       
       weights_sum += weights[j];
     }
     
-    surv_matrix[i][0] = 1;
-    weights_sum -= remove_matrix[i][0];
+    surv_matrix(0,i) = 1;
+    weights_sum -= remove_matrix(0,i);
     
     // KM survival function
     for (j = 1; j <= Nfail; j++)
     {
-      surv_matrix[i][j] = surv_matrix[i][j-1] * (1 - surv_matrix[i][j]/weights_sum);
-      weights_sum -= remove_matrix[i][j];
+      surv_matrix(j,i) = surv_matrix(j-1,i) * (1 - surv_matrix(j,i)/weights_sum);
+      weights_sum -= remove_matrix(j,i);
     }
     
-    free(weights);
+    //free(weights);
   }
 
 

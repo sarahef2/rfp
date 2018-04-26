@@ -1,4 +1,4 @@
-library(survForest)
+library(RLT)
 library(MASS)
 library(survival)
 library(randomForestSRC)
@@ -7,7 +7,7 @@ library(randomForestSRC)
 use.cores = 1
 
 P = 100
-trainN = 600
+trainN = 500
 testN = 1000
 
 rho = 0.25
@@ -15,7 +15,7 @@ V <- rho^abs(outer(1:P, 1:P, "-"))
 
 set.seed(5)
 X = as.matrix(mvrnorm(trainN + testN, mu=rep(0,P), Sigma=V))
-Link <- function(x) x[,1] + 2*x[,2]
+Link <- function(x) x[,1] + 2*x[,P/2]
 
 set.seed(5)
 T = exp(0.5*rnorm(trainN + testN, mean = Link(X)))
@@ -39,8 +39,8 @@ testCensor = Censor[-(1:trainN)]
 
 # test the package
 pre = Sys.time()
-fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 10, nmin = 5, split.gen = "best", split.rule = "logrank", nsplit = 10,
-                 verbose = TRUE, use.cores = use.cores, replacement = TRUE)
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 10, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 verbose = TRUE, use.cores = use.cores, replacement = TRUE,resample.prob = 1)
 Sys.time() - pre
 
 fit$FittedForest

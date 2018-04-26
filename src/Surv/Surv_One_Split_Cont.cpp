@@ -130,7 +130,7 @@ void Surv_One_Split_Cont(double* cut,
   //double* xtemp = (double *) malloc(node_n * sizeof(double));
   vec xtemp(node_n);
   //int* index = (int *) malloc(node_n * sizeof(int));
-  uvec index(node_n);
+  ivec index(node_n);
 
   for (i = 0; i < node_n; i++)
   {
@@ -138,9 +138,9 @@ void Surv_One_Split_Cont(double* cut,
     index[i] = i;
   }
 
-  //qSort_dindex(xtemp, 0, node_n-1, index);
-  index = sort_index(xtemp);
-  xtemp = sort(xtemp);
+  qSort_dindex(xtemp, 0, node_n-1, index);
+  //index = sort_index(xtemp);
+  //xtemp = sort(xtemp);
 
   int lowindex = mincount - 1;
   int highindex = node_n - 1 - lowindex;
@@ -412,7 +412,7 @@ void Surv_One_Split_Cont_W(double* cut,
   //double* xtemp = (double *) malloc(node_n * sizeof(double));
   vec xtemp(node_n);
   //int* index = (int *) malloc(node_n * sizeof(int));
-  uvec index(node_n);
+  ivec index(node_n);
 
   for (i = 0; i < node_n; i++)
   {
@@ -420,9 +420,9 @@ void Surv_One_Split_Cont_W(double* cut,
     index[i] = i;
   }
 
-  //qSort_dindex(xtemp, 0, node_n-1, index);
-  index = sort_index(xtemp);
-  xtemp = sort(xtemp);
+  qSort_dindex(xtemp, 0, node_n-1, index);
+  //index = sort_index(xtemp);
+  //xtemp = sort(xtemp);
 
   int lowindex = imax(nmin, (int) alpha*node_n) - 1;
   int highindex = node_n - 1 - lowindex;

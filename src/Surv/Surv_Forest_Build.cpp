@@ -130,7 +130,7 @@ void survForestBuild(//const double** X,
     // if the ObsTrack is zero, then its in the out-of-bag data
 
     for (i=0; i< size; i++)
-      ObsTrack(nt,inbagObs[i])++;
+      ObsTrack(inbagObs[i],nt)++;
 
     //int * Ytemp = (int *) malloc(size * sizeof(int));
     //int * Ytemp = new int[size];
@@ -149,8 +149,7 @@ void survForestBuild(//const double** X,
     //int *inbagObs_copy = new int[size];
     ivec inbagObs_copy(size);
     for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
-    Rcout << inbagObs_copy << std::endl;;
-    
+
     // start to build the
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P);
     
@@ -199,7 +198,7 @@ void Record_NodeRegi(int* Node, TREENODE* TreeRoot, imat& NodeRegi, int nt)
   if (TreeRoot->Var == -1) // terminal node
   {
     for (int i = 0; i< TreeRoot->NodeSize; i++){
-      NodeRegi(nt, TreeRoot->NodeObs[i]) = *Node;
+      NodeRegi(TreeRoot->NodeObs[i],nt) = *Node;
     }
   }else{
 

@@ -31,12 +31,12 @@ using namespace Rcpp;
 # include "..//utilities.h"
 
 void Get_Kernel_Weights(int subj,
-                        const double** X,
-                        const int* Ncat,
-                        const double** tree_matrix_nt,
-                        const int* ObsTrack_nt,
-                        const int* NodeRegi_nt,
-                        double* weights,
+                        const std::vector< colvec > X,
+                        const ivec Ncat,
+                        const mat tree_matrix_nt,
+                        const ivec ObsTrack_nt,
+                        const ivec NodeRegi_nt,
+                        vec& weights,
                         const int N)
 {
   int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt) + 1;
@@ -56,13 +56,13 @@ void Get_Kernel_Weights(int subj,
 
 
 void Get_Kernel_Weights_w(int subj,
-                          const double** X,
-                          const int* Ncat,
-                          const double** tree_matrix_nt,
-                          const int* ObsTrack_nt,
-                          const int* NodeRegi_nt,
-                          const double* subjectweight,
-                          double* weights,
+                          const std::vector< vec > X,
+                          const ivec Ncat,
+                          const mat tree_matrix_nt,
+                          const ivec ObsTrack_nt,
+                          const ivec NodeRegi_nt,
+                          const vec subjectweight,
+                          vec& weights,
                           const int N)
 {
   int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt) + 1;
@@ -79,23 +79,23 @@ void Get_Kernel_Weights_w(int subj,
 }
 
 
-int get_terminal(int node, int subj, const double ** X, const int* Ncat, const double** tree_matrix_nt)
+int get_terminal(int node, int subj, const std::vector< colvec > X, const ivec Ncat, const mat tree_matrix_nt)
 {
-  if (tree_matrix_nt[0][node] < 0)
+  if (tree_matrix_nt(node,0) < 0)
     return node;
 
-  int splitvar = (int) tree_matrix_nt[0][node] - 1;
+  int splitvar = (int) tree_matrix_nt(node,0) - 1;
 
   if (Ncat[splitvar] > 1)
   {
-    if (unpack_goright(tree_matrix_nt[1][node], X[splitvar][subj] -1) == 0)
-      return get_terminal((int) tree_matrix_nt[2][node] - 1, subj, X, Ncat, tree_matrix_nt);
+    if (unpack_goright(tree_matrix_nt(node,1), X[splitvar][subj] -1) == 0)
+      return get_terminal((int) tree_matrix_nt(node,2) - 1, subj, X, Ncat, tree_matrix_nt);
     else
-      return get_terminal((int) tree_matrix_nt[3][node] - 1, subj, X, Ncat, tree_matrix_nt);
+      return get_terminal((int) tree_matrix_nt(node,3) - 1, subj, X, Ncat, tree_matrix_nt);
   }else{
-    if (X[splitvar][subj] <= tree_matrix_nt[1][node])
-      return get_terminal((int) tree_matrix_nt[2][node] - 1, subj, X, Ncat, tree_matrix_nt);
+    if (X[splitvar][subj] <= tree_matrix_nt(node,1))
+      return get_terminal((int) tree_matrix_nt(node,2) - 1, subj, X, Ncat, tree_matrix_nt);
     else
-      return get_terminal((int) tree_matrix_nt[3][node] - 1, subj, X, Ncat, tree_matrix_nt);
+      return get_terminal((int) tree_matrix_nt(node,3) - 1, subj, X, Ncat, tree_matrix_nt);
   }
 }

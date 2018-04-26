@@ -165,41 +165,41 @@ double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_
 // prediction functions
 
 
-List survForestPredict(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
+mat survForestPredict(mat, List, imat, ivec, ivec, vec, imat, imat, List, int);
 
-void PredictSurvivalKernel(const double** X,
-                           const int* Y,
-                           const int* Censor,
-                           const int* Ncat,
-                           const double* subjectweight,
-                           const double*** tree_matrix,
-                           const int** ObsTrack,
-                           const int** NodeRegi,
-                           double** surv_matrix,
+void PredictSurvivalKernel(const std::vector< colvec > X,
+                           const ivec Y,
+                           const ivec Censor,
+                           const ivec Ncat,
+                           const vec subjectweight,
+                           const std::vector< mat > tree_matrix,
+                           const imat ObsTrack,
+                           const imat NodeRegi,
+                           mat &surv_matrix,
                            const PARAMETERS* myPara,
                            int testN,
                            int use_cores);
 
 void Get_Kernel_Weights(int subj,
-                        const double** X,
-                        const int* Ncat,
-                        const double** tree_matrix_nt,
-                        const int* ObsTrack_nt,
-                        const int* NodeRegi_nt,
-                        double* weights,
+                        const std::vector< vec > X,
+                        const ivec Ncat,
+                        const mat tree_matrix_nt,
+                        const ivec ObsTrack_nt,
+                        const ivec NodeRegi_nt,
+                        vec &weights,
                         const int N);
 
 void Get_Kernel_Weights_w(int subj,
-                          const double** X,
-                          const int* Ncat,
-                          const double** tree_matrix_nt,
-                          const int* ObsTrack_nt,
-                          const int* NodeRegi_nt,
-                          const double* subjectweight,
-                          double* weights,
+                          const std::vector< vec > X,
+                          const ivec Ncat,
+                          const mat tree_matrix_nt,
+                          const ivec ObsTrack_nt,
+                          const ivec NodeRegi_nt,
+                          const vec subjectweight,
+                          vec &weights,
                           const int N);
 
-int get_terminal(int node, int subj, const double ** X, const int* Ncat, const double** tree_matrix_nt);
+int get_terminal(int node, int subj, const std::vector< vec > X, const ivec Ncat, const mat tree_matrix_nt);
 
 #endif
 
