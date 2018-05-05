@@ -46,7 +46,7 @@ void survForestBuild(//const double** X,
                      const int P,
                      TREENODE** Forest,
                      imat &ObsTrack,
-                     imat &NodeRegi,
+                     std::vector< std::vector< ivec > > &NodeRegi,
                      mat VarImp,
                      int use_cores)
 {
@@ -191,16 +191,23 @@ void survForestBuild(//const double** X,
 
 
 
-void Record_NodeRegi(int* Node, TREENODE* TreeRoot, imat& NodeRegi, int nt)
+void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< ivec > > &NodeRegi, int nt)
 {
   *Node += 1;
 
   if (TreeRoot->Var == -1) // terminal node
   {
-    for (int i = 0; i< TreeRoot->NodeSize; i++){
-      NodeRegi(TreeRoot->NodeObs[i],nt) = *Node;
-    }
+    //for (int i = 0; i< TreeRoot->NodeSize; i++){
+      //NodeRegi(TreeRoot->NodeObs[i],nt) = *Node;
+      //NodeRegi[nt].push_back(TreeRoot->NodeObs[i]);//Adds all observations in this terminal node
+    //}
+    NodeRegi[nt].push_back(TreeRoot->NodeObs);
   }else{
+    
+    ivec empty(1);
+    empty.fill(-1);
+    
+    NodeRegi[nt].push_back(empty);//Not terminal node, so pushes empty vector
 
     Record_NodeRegi(Node, TreeRoot->Left, NodeRegi, nt);
 

@@ -36,7 +36,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // survForestPredict
-arma::mat survForestPredict(arma::mat testsetX_R, List FittedForest_R, arma::imat datasetY_R, arma::ivec datasetCensor_R, arma::ivec datasetNcat_R, arma::vec subjectweight_R, arma::imat ObsTrackMat_R, arma::imat NodeRegiMat_R, List parameters_R, int usecores_R);
+arma::mat survForestPredict(arma::mat testsetX_R, List FittedForest_R, arma::imat datasetY_R, arma::ivec datasetCensor_R, arma::ivec datasetNcat_R, arma::vec subjectweight_R, arma::imat ObsTrackMat_R, List NodeRegiMat_R, List parameters_R, int usecores_R);
 RcppExport SEXP _RLT_survForestPredict(SEXP testsetX_RSEXP, SEXP FittedForest_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP datasetNcat_RSEXP, SEXP subjectweight_RSEXP, SEXP ObsTrackMat_RSEXP, SEXP NodeRegiMat_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -48,7 +48,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::ivec >::type datasetNcat_R(datasetNcat_RSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type subjectweight_R(subjectweight_RSEXP);
     Rcpp::traits::input_parameter< arma::imat >::type ObsTrackMat_R(ObsTrackMat_RSEXP);
-    Rcpp::traits::input_parameter< arma::imat >::type NodeRegiMat_R(NodeRegiMat_RSEXP);
+    Rcpp::traits::input_parameter< List >::type NodeRegiMat_R(NodeRegiMat_RSEXP);
     Rcpp::traits::input_parameter< List >::type parameters_R(parameters_RSEXP);
     Rcpp::traits::input_parameter< int >::type usecores_R(usecores_RSEXP);
     rcpp_result_gen = Rcpp::wrap(survForestPredict(testsetX_R, FittedForest_R, datasetY_R, datasetCensor_R, datasetNcat_R, subjectweight_R, ObsTrackMat_R, NodeRegiMat_R, parameters_R, usecores_R));

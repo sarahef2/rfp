@@ -48,13 +48,13 @@ void survForestBuild(//const double** X,
                      const int P,
                      TREENODE** Forest,
                      imat &ObsTrack,
-                     imat &NodeRegi,
+                     std::vector< std::vector< ivec > > &NodeRegi,
                      mat VarImp,
                      int use_cores);
 
 void push_censor_front(int* inbagObs, int* Y, int* Censor, int size);
 
-void Record_NodeRegi(int* Node, TREENODE* TreeRoot, imat& NodeRegi, int nt);
+void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< ivec > > &NodeRegi, int nt);
 
 void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength);
 
@@ -165,7 +165,7 @@ double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_
 // prediction functions
 
 
-mat survForestPredict(mat, List, imat, ivec, ivec, vec, imat, imat, List, int);
+mat survForestPredict(mat, List, imat, ivec, ivec, vec, imat, List, List, int);
 
 void PredictSurvivalKernel(const std::vector< colvec > X,
                            const ivec Y,
@@ -174,7 +174,7 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
                            const vec subjectweight,
                            const std::vector< mat > tree_matrix,
                            const imat ObsTrack,
-                           const imat NodeRegi,
+                           const std::vector< std::vector< ivec > > NodeRegi,
                            mat &surv_matrix,
                            const PARAMETERS* myPara,
                            int testN,
@@ -185,7 +185,7 @@ void Get_Kernel_Weights(int subj,
                         const ivec Ncat,
                         const mat tree_matrix_nt,
                         const ivec ObsTrack_nt,
-                        const ivec NodeRegi_nt,
+                        const std::vector< ivec > NodeRegi_nt,
                         vec &weights,
                         const int N);
 
@@ -194,7 +194,7 @@ void Get_Kernel_Weights_w(int subj,
                           const ivec Ncat,
                           const mat tree_matrix_nt,
                           const ivec ObsTrack_nt,
-                          const ivec NodeRegi_nt,
+                          const std::vector< ivec > NodeRegi_nt,
                           const vec subjectweight,
                           vec &weights,
                           const int N);
@@ -202,12 +202,3 @@ void Get_Kernel_Weights_w(int subj,
 int get_terminal(int node, int subj, const std::vector< vec > X, const ivec Ncat, const mat tree_matrix_nt);
 
 #endif
-
-
-
-
-
-
-
-
-

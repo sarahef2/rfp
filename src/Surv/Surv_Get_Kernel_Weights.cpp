@@ -35,20 +35,24 @@ void Get_Kernel_Weights(int subj,
                         const ivec Ncat,
                         const mat tree_matrix_nt,
                         const ivec ObsTrack_nt,
-                        const ivec NodeRegi_nt,
+                        const std::vector< ivec > NodeRegi_nt,
                         vec& weights,
                         const int N)
 {
   int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt) + 1;
 
-  for (int i = 0; i < N; i++)
-  {
-
-    if (NodeRegi_nt[i] == node)
-    {
-
-      weights[i] += ObsTrack_nt[i];
-    }
+  //for (int i = 0; i < N; i++)
+  //{
+  //
+  //  if (NodeRegi_nt[i] == node)
+  //  {
+  //
+  //    weights[i] += ObsTrack_nt[i];
+  //  }
+  //}
+  
+  for (int i = 0; i < NodeRegi_nt[node].size(); i++){
+    weights[NodeRegi_nt[node][i]]++;
   }
 
   return;
@@ -60,21 +64,26 @@ void Get_Kernel_Weights_w(int subj,
                           const ivec Ncat,
                           const mat tree_matrix_nt,
                           const ivec ObsTrack_nt,
-                          const ivec NodeRegi_nt,
+                          const std::vector< ivec > NodeRegi_nt,
                           const vec subjectweight,
                           vec& weights,
                           const int N)
 {
-  int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt) + 1;
+  int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt); //+ 1;
 
-  for (int i = 0; i < N; i++)
-  {
-    if (NodeRegi_nt[i] == node)
-    {
-      weights[i] += ObsTrack_nt[i]*subjectweight[i];
-    }
+//  for (int i = 0; i < N; i++)
+//  {
+//    if (NodeRegi_nt[i] == node)
+//    {
+//      weights[i] += ObsTrack_nt[i]*subjectweight[i];
+//    }
+//  }
+  for (int i = 0; i < NodeRegi_nt[node].n_elem; i++){
+    weights[NodeRegi_nt[node][i]]+=subjectweight[NodeRegi_nt[node][i]];
   }
-
+  
+  Rcout << "Finished" << std::endl;;
+  
   return;
 }
 

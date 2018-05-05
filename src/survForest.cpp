@@ -19,14 +19,9 @@
 //
 //  **********************************************************************
 
-//New Comment
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
-//# include <Rdefines.h>
-//# include <Rinternals.h>
-//# include <R.h>
 using namespace Rcpp;
 using namespace arma;
 
@@ -94,8 +89,10 @@ List survForestFit(arma::mat datasetX_R,
 
   imat ObsTrack(N,ntrees);
   ObsTrack.fill(0);
-  imat NodeRegi(N,ntrees);
-  NodeRegi.fill(0);
+  //imat NodeRegi(N,ntrees);
+  //std::vector< List > NodeRegi(ntrees);
+  std::vector< std::vector< ivec > > NodeRegi(ntrees);
+  //NodeRegi.fill(0);
   mat VarImp(ntrees,N);
   
   ivec subj_id(N);
@@ -189,7 +186,7 @@ void survForestPrint(List parameters_R)
                         arma::ivec datasetNcat_R,
                         arma::vec subjectweight_R,
                         arma::imat ObsTrackMat_R,
-                        arma::imat NodeRegiMat_R,
+                        List NodeRegiMat_R,
                         List parameters_R,
                         int usecores_R)
  {
@@ -250,6 +247,7 @@ void survForestPrint(List parameters_R)
   //double ***tree_matrix = (double ***) malloc(ntrees * sizeof(double **));
   //double ***tree_matrix = new double**[ntrees];
   std::vector< mat > tree_matrix(ntrees);
+  std::vector< std::vector< ivec > > NodeRegi(ntrees);
   //if (tree_matrix == NULL) error("Unable to malloc for tree_matrix");
   //if (tree_matrix == NULL) stop("Unable to malloc for tree_matrix");
 
@@ -264,7 +262,10 @@ void survForestPrint(List parameters_R)
     //TreeLength=FittedForest_R[nt].size;
     
     tree_matrix[nt] = as<mat>(FittedForest_R[nt]);
-
+    for(i = 0; i < Rcpp::as<List>(NodeRegiMat_R[nt]).size(); i++){
+      NodeRegi[nt].push_back(as<ivec>(as<List>(NodeRegiMat_R[nt])[i]));
+    }
+    //NodeRegi[nt] = NodeRegiMat_R[nt];
     //for (i = 0; i < TreeWidth; i++)
     //  tree_matrix[nt][i] = &REAL(VECTOR_ELT(FittedForest_R, nt))[i*TreeLength];
   }
@@ -283,13 +284,12 @@ void survForestPrint(List parameters_R)
   // get NodeRegi
   //int **NodeRegi = (int **) malloc(ntrees * sizeof(int *));
   //int **NodeRegi = new int*[ntrees];
-  imat NodeRegi(N,ntrees);
+  //imat NodeRegi(N,ntrees);
   //if (NodeRegi == NULL) error("Unable to malloc NodeRegi");
   //if (NodeRegi == NULL) stop("Unable to malloc NodeRegi");
   //for (nt = 0; nt < ntrees; nt++)
   //  NodeRegi[nt] = &INTEGER(NodeRegiMat_R)[nt*N];
-  NodeRegi=NodeRegiMat_R;
-
+  //NodeRegi=NodeRegiMat_R;
 
   //SEXP SurvMat;
   //mat SurvMat(Nfail+1,testN);
@@ -318,7 +318,7 @@ void survForestPrint(List parameters_R)
                         subjectweight,
                         (const std::vector< mat >) tree_matrix,
                         (const imat) ObsTrack,
-                        (const imat) NodeRegi,
+                        (const std::vector< std::vector< ivec > >) NodeRegi,
                         surv_matrix,
                         (const PARAMETERS*) myPara,
                         testN,
@@ -344,7 +344,6 @@ void survForestPrint(List parameters_R)
   //UNPROTECT(1);
 
   return surv_matrix;//SurvMat;
-  //   return List();//Placeholder
  }
  
  

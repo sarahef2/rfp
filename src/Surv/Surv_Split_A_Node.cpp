@@ -87,7 +87,7 @@ void Surv_Split_A_Node(TREENODE* Node,
     ivec useObsLeft(node_n);
     //int* useObsRight = (int *) malloc(node_n * sizeof(int));
     ivec useObsRight(node_n);
-
+    
     if (Ncat[splitVar] > 1)
     {
 
@@ -106,6 +106,8 @@ void Surv_Split_A_Node(TREENODE* Node,
           RightSize ++;
         }
       }
+      useObsLeft.resize(LeftSize);
+      useObsRight.resize(RightSize);
 
       //free(goright);
       //delete[] goright;
@@ -124,7 +126,8 @@ void Surv_Split_A_Node(TREENODE* Node,
         }
       }
     }
-
+    useObsLeft.resize(LeftSize);
+    useObsRight.resize(RightSize);
 
     if (LeftSize == 0 || RightSize == 0)
     {

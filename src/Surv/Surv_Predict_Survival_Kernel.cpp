@@ -125,7 +125,7 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
                            const vec subjectweight,
                            const std::vector< mat > tree_matrix,
                            const imat ObsTrack,
-                           const imat NodeRegi,
+                           const std::vector< std::vector< ivec > > NodeRegi,
                            mat &surv_matrix,
                            const PARAMETERS* myPara,
                            int testN,
@@ -136,11 +136,12 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
   int ntrees = myPara->ntrees;
   int verbose = myPara->verbose;
   int use_sub_weight = myPara->use_sub_weight;
-  int i;
+  //int i;
   
   // parallel computing... set cores
   
   use_cores = imax(1, use_cores);
+  Rcout << "Started prediction" << std::endl;;
   
   int haveCores = omp_get_max_threads();
   
@@ -153,23 +154,26 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
   // matrix keep track of the sum of fail and censor at each time point
   //double **remove_matrix = (double **) malloc(testN * sizeof(double *));
   mat remove_matrix(Nfail+1,testN);
+  remove_matrix.fill(0);
   //if (remove_matrix == NULL) error("Unable to malloc remove_matrix");
   //for (i = 0; i < testN; i++)
   //  remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
   
-#pragma omp parallel for schedule(guided) num_threads(use_cores)
-  for (i = 0; i < testN; i++)
+//#pragma omp parallel for schedule(guided) num_threads(use_cores)
+//Check with Ruoqing
+  for (int i = 0; i < testN; i++)
   {
     //double* weights = (double *) calloc(N, sizeof(double));
     vec weights(N);
+    weights.fill(0);
     int j, nt;
     
     if (use_sub_weight)
       for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi.col(nt), subjectweight, weights, N);
+        Get_Kernel_Weights_w(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi[nt], subjectweight, weights, N);
     else
       for (nt = 0; nt < ntrees; nt++)
-        Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi.col(nt), weights, N);
+        Get_Kernel_Weights(i, X, Ncat, tree_matrix[nt], ObsTrack.col(nt), NodeRegi[nt], weights, N);
     
     double weights_sum = 0;
     
@@ -189,10 +193,15 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
     // KM survival function
     for (j = 1; j <= Nfail; j++)
     {
-      surv_matrix(j,i) = surv_matrix(j-1,i) * (1 - surv_matrix(j,i)/weights_sum);
+      if(weights_sum > 0){
+        surv_matrix(j,i) = surv_matrix(j-1,i) * (1 - surv_matrix(j,i)/weights_sum);
+      }else{
+        surv_matrix(j,i) = 0;
+      }
       weights_sum -= remove_matrix(j,i);
     }
     
+
     //free(weights);
   }
 

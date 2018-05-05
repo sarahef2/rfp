@@ -38,7 +38,7 @@ void Surv_One_Split_Cat(double* cut,
                         const ivec useObs,
                         int node_n,
                         //const double* x, // x should be called by index useObs[i]
-                        const colvec x,
+                        const vec x,
                         const ivec Y, // y should be called by index i
                         const ivec Censor, // censor should be called by index i
                         int ncat,
@@ -377,7 +377,7 @@ void Surv_One_Split_Cat_W(double* cut,
   Right_Count_Censor.fill(0);
   vec Right_Count_Fail(ncat);
   Right_Count_Fail.fill(0);
-  
+
 
   // sumerize all categories in this node
   //SURVCAT_w* Cat_Count = (SURVCAT_w*) malloc(ncat * sizeof(SURVCAT_w));
@@ -535,7 +535,8 @@ void Surv_One_Split_Cat_W(double* cut,
       }
     }
   }
-
+  Rcout << "Got to here" << std::endl;;  
+  
   // best split
 
   if (split_gen == 3)
@@ -608,7 +609,8 @@ void Surv_One_Split_Cat_W(double* cut,
       }
     }
   }
-
+  Rcout << "Got to here 7" << std::endl;;  
+  
   //free(goright);
   //delete[] gorightw;
   //free(tempRight);
@@ -624,15 +626,16 @@ void Surv_One_Split_Cat_W(double* cut,
 
   NothingToFind:
 
-  for (i=0; i< ncat; i++)
-  {
+  //for (i=0; i< ncat; i++)
+  //{
     //free(Cat_Count[i].flist);
     //delete[] Cat_Count[i].flist;
     //free(Cat_Count[i].clist);
     //delete[] Cat_Count[i].clist;
-  }
+  //}
 
   //free(Cat_Count);
   delete[] Cat_Count;
-
+  Rcout << "Got to here 8" << std::endl;;  
+  
 }
