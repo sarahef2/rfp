@@ -82,8 +82,6 @@ void Get_Kernel_Weights_w(int subj,
     weights[NodeRegi_nt[node][i]]+=subjectweight[NodeRegi_nt[node][i]];
   }
   
-  Rcout << "Finished" << std::endl;;
-  
   return;
 }
 

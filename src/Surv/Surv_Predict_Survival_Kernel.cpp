@@ -141,8 +141,7 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
   // parallel computing... set cores
   
   use_cores = imax(1, use_cores);
-  Rcout << "Started prediction" << std::endl;;
-  
+
   int haveCores = omp_get_max_threads();
   
   if(use_cores > haveCores)
@@ -153,7 +152,7 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
   
   // matrix keep track of the sum of fail and censor at each time point
   //double **remove_matrix = (double **) malloc(testN * sizeof(double *));
-  mat remove_matrix(Nfail+1,testN);
+  mat remove_matrix(testN,Nfail+1);
   remove_matrix.fill(0);
   //if (remove_matrix == NULL) error("Unable to malloc remove_matrix");
   //for (i = 0; i < testN; i++)
@@ -179,26 +178,26 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
     
     for (j = 0; j < N; j++)
     {
-      remove_matrix(Y[j],i) += weights[j];//[i][Y[j]]
+      remove_matrix(i,Y[j]) += weights[j];//[i][Y[j]]
       
       if (Censor[j] == 1)
-        surv_matrix(Y[j],i) += weights[j];
+        surv_matrix(i,Y[j]) += weights[j];
       
       weights_sum += weights[j];
     }
     
-    surv_matrix(0,i) = 1;
-    weights_sum -= remove_matrix(0,i);
+    surv_matrix(i,0) = 1;
+    weights_sum -= remove_matrix(i,0);
     
     // KM survival function
     for (j = 1; j <= Nfail; j++)
     {
       if(weights_sum > 0){
-        surv_matrix(j,i) = surv_matrix(j-1,i) * (1 - surv_matrix(j,i)/weights_sum);
+        surv_matrix(i,j) = surv_matrix(i,j-1) * (1 - surv_matrix(i,j)/weights_sum);
       }else{
-        surv_matrix(j,i) = 0;
+        surv_matrix(i,j) = 0;
       }
-      weights_sum -= remove_matrix(j,i);
+      weights_sum -= remove_matrix(i,j);
     }
     
 

@@ -297,7 +297,7 @@ void survForestPrint(List parameters_R)
 
   //double **surv_matrix = (double **) malloc(testN * sizeof(double *));
   //double **surv_matrix = new double*[testN];
-  mat surv_matrix(Nfail+1,testN);
+  mat surv_matrix(testN,Nfail+1);
   surv_matrix.fill(0);
   //if (surv_matrix == NULL) error("Unable to malloc surv_matrix");
   //if (surv_matrix == NULL) stop("Unable to malloc surv_matrix");

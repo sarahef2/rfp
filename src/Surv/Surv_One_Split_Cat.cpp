@@ -369,13 +369,13 @@ void Surv_One_Split_Cat_W(double* cut,
   goright.fill(0);
   ivec tempRight(ncat);
   tempRight.fill(0);
-  vec Left_Count_Censor(ncat);
+  vec Left_Count_Censor(timepoints+1);
   Left_Count_Censor.fill(0);
-  vec Left_Count_Fail(ncat);
+  vec Left_Count_Fail(timepoints+1);
   Left_Count_Fail.fill(0);
-  vec Right_Count_Censor(ncat);
+  vec Right_Count_Censor(timepoints+1);
   Right_Count_Censor.fill(0);
-  vec Right_Count_Fail(ncat);
+  vec Right_Count_Fail(timepoints+1);
   Right_Count_Fail.fill(0);
 
 
@@ -535,8 +535,7 @@ void Surv_One_Split_Cat_W(double* cut,
       }
     }
   }
-  Rcout << "Got to here" << std::endl;;  
-  
+
   // best split
 
   if (split_gen == 3)
@@ -609,8 +608,7 @@ void Surv_One_Split_Cat_W(double* cut,
       }
     }
   }
-  Rcout << "Got to here 7" << std::endl;;  
-  
+
   //free(goright);
   //delete[] gorightw;
   //free(tempRight);
@@ -636,6 +634,5 @@ void Surv_One_Split_Cat_W(double* cut,
 
   //free(Cat_Count);
   delete[] Cat_Count;
-  Rcout << "Got to here 8" << std::endl;;  
-  
+
 }
