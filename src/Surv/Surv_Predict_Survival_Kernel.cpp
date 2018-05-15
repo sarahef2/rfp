@@ -195,6 +195,7 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
       if(weights_sum > 0){
         surv_matrix(i,j) = surv_matrix(i,j-1) * (1 - surv_matrix(i,j)/weights_sum);
       }else{
+        //Or stop
         surv_matrix(i,j) = 0;
       }
       weights_sum -= remove_matrix(i,j);

@@ -39,7 +39,7 @@ void Get_Kernel_Weights(int subj,
                         vec& weights,
                         const int N)
 {
-  int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt) + 1;
+  int node = get_terminal(0, subj, X, Ncat, tree_matrix_nt);// + 1;
 
   //for (int i = 0; i < N; i++)
   //{
@@ -51,7 +51,7 @@ void Get_Kernel_Weights(int subj,
   //  }
   //}
   
-  for (int i = 0; i < NodeRegi_nt[node].size(); i++){
+  for (int i = 0; i < NodeRegi_nt[node].n_elem; i++){
     weights[NodeRegi_nt[node][i]]++;
   }
 
