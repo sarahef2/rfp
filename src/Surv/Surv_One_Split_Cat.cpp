@@ -56,7 +56,6 @@ void Surv_One_Split_Cat(double* cut,
 
   // sumerize all categories in this node
   //SURVCAT* Cat_Count = (SURVCAT*) malloc(ncat * sizeof(SURVCAT));
-  Rcout << "B" << std::endl;;
   SURVCAT* Cat_Count = new SURVCAT[ncat];
     
   //Moved since the function couldn't find them
@@ -79,8 +78,7 @@ void Surv_One_Split_Cat(double* cut,
   ivec Right_Count_Fail(timepoints+1);
   Right_Count_Fail.fill(0);
     
-    Rcout << "C" << std::endl;;
-    
+
   for (i=0; i< ncat; i++)
   {
     Cat_Count[i].cat = i;
@@ -92,8 +90,7 @@ void Surv_One_Split_Cat(double* cut,
     //Cat_Count[i].clist = (int*) calloc(timepoints+1, sizeof(int));
     Cat_Count[i].clist = ivec(timepoints+1);
   }
-  Rcout << "D" << std::endl;;
-  
+
   // record each category
   for (i=0; i<node_n; i++)
   {
@@ -125,8 +122,7 @@ void Surv_One_Split_Cat(double* cut,
   // put categories with nonzero failures to the front
 
   int true_ncat_f = true_ncat;
-  Rcout << "E" << std::endl;;
-  
+
   for (i =0; i < true_ncat_f; i++)
   {
     if (Cat_Count[i].f <= 0)
@@ -239,8 +235,7 @@ void Surv_One_Split_Cat(double* cut,
   
   if (split_gen == 3)
   {
-    Rcout << "F" << std::endl;;
-    
+
     //memset(tempRight, 0, ncat*sizeof(int));
     nsplit = pow(2, true_ncat-1) -1;
     
@@ -258,8 +253,7 @@ void Surv_One_Split_Cat(double* cut,
       
       // fit the next possible split rule using binary vectors
       tempRight[0]++;
-      Rcout << "G" << std::endl;;
-      
+
       for (i = 0; i < true_ncat - 1; i++)
       {
         if (tempRight[i] == 1)
@@ -287,8 +281,7 @@ void Surv_One_Split_Cat(double* cut,
           }
         }
       }
-      Rcout << "H" << std::endl;;
-      
+
       if (LeftN > 0 && LeftN < node_n)
       {
         if (split_rule == 1)
@@ -297,7 +290,6 @@ void Surv_One_Split_Cat(double* cut,
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
       }
       
-      Rcout << "I" << std::endl;;
       if (temp_score > *score)
       {
         for (i = 0; i< ncat; i ++)
@@ -309,8 +301,7 @@ void Surv_One_Split_Cat(double* cut,
       }
     }
   }
-  Rcout << "J" << std::endl;;
-  
+
   //free(goright);
   //delete[] goright;
   //free(tempRight);
