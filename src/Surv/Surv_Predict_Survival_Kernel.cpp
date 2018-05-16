@@ -159,7 +159,6 @@ void PredictSurvivalKernel(const std::vector< colvec > X,
   //  remove_matrix[i] = (double *) calloc(Nfail+1, sizeof(double));
   
 //#pragma omp parallel for schedule(guided) num_threads(use_cores)
-//Check with Ruoqing
   for (int i = 0; i < testN; i++)
   {
     //double* weights = (double *) calloc(N, sizeof(double));
