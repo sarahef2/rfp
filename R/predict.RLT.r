@@ -64,7 +64,7 @@ survForest_predict <- function(object, testx, use.cores = 0, ...)
                          object$ObsTrack,
                          object$NodeRegi,
                          object$parameters,
-                         as.integer(use.cores))[-1, ]
+                         as.integer(use.cores))[,-1]
 
   pred[['timepoints']] = c(object$timepoints)
 

@@ -152,7 +152,7 @@ void swap_i(int*, int i, int j);
 // random number
 
 int random_in_range(int, int);
-int sample_rotate(ivec index, vec weights, int start, int end);
+int sample_rotate(ivec &index, vec &weights, int start, int end);
 int weighted_sample(const double* x, int n);
 
 // sorting

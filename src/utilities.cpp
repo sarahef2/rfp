@@ -174,7 +174,7 @@ int random_in_range(int min, int max)
 
 // sample with weight from the tail of a vector and rotate the sampled one to the front
 
-int sample_rotate(ivec index, vec weights, int start, int end)
+int sample_rotate(ivec &index, vec &weights, int start, int end)
 {
   // sample without replacement, will put sampled one to the front
   // will order weights vector in the same way
