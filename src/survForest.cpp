@@ -46,13 +46,15 @@ List survForestFit(arma::mat datasetX_R,
   //PARAMETERS *myPara = (PARAMETERS*) malloc(sizeof(PARAMETERS));
   PARAMETERS* myPara = new PARAMETERS();
   copyParameters(myPara, parameters_R);
-
+  //Rcout << "Got to A " << std::endl;
+  
   if (myPara->verbose) printParameters(myPara);
 
   //int use_cores = INTEGER(usecores_R)[0];
   int use_cores = usecores_R;
   if (use_cores <= 0) use_cores = imax(1, omp_get_max_threads() - 1);
 
+  //Rcout << "Got to B " << std::endl;
   //// create data objects
 
   int N = myPara->N;
@@ -72,6 +74,7 @@ List survForestFit(arma::mat datasetX_R,
     X[j] = conv_to<colvec>::from(datasetX_R.col(j));
   };
   
+  //Rcout << "Got to C " << std::endl;
   const ivec Y = datasetY_R;
   const ivec Censor= datasetCensor_R;
   const ivec Ncat=ncat_R;
@@ -80,6 +83,7 @@ List survForestFit(arma::mat datasetX_R,
   vec subjectweight = subjectweight_R;
   standardize(subjectweight, N);	// this could change the input data due to precision loss...
 
+  //Rcout << "Got to D " << std::endl;
   vec variableweight = variableweight_R;
   standardize(variableweight, P);	// this could change the input data due to precision loss...
 
@@ -94,6 +98,7 @@ List survForestFit(arma::mat datasetX_R,
   std::vector< std::vector< ivec > > NodeRegi(ntrees);
   //NodeRegi.fill(0);
   mat VarImp(ntrees,N);
+  //Rcout << "Got to E " << std::endl;
   
   ivec subj_id(N);
   for (i = 0; i  < N; i++) subj_id(i) = i;
@@ -120,7 +125,8 @@ List survForestFit(arma::mat datasetX_R,
                   VarImp,
                   use_cores);
   
-
+  //Rcout << "Got to F " << std::endl;
+  
   int TreeWidth = 4;
   
   // return subjects to R 
@@ -150,7 +156,8 @@ List survForestFit(arma::mat datasetX_R,
     //SET_VECTOR_ELT(FittedForest, nt, FittedTree);
     FittedForest(nt)=FittedTree;
   }
-
+  //Rcout << "Got to G " << std::endl;
+  
   List ReturnList;
 
   ReturnList["FittedForest"] = FittedForest;
@@ -159,7 +166,8 @@ List survForestFit(arma::mat datasetX_R,
 
   delete[] myPara;
   delete[] Forest;
-
+  //Rcout << "Got to H " << std::endl;
+  
   return ReturnList;
 }
 

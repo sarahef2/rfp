@@ -47,6 +47,9 @@ void Surv_Split_A_Node(TREENODE* Node,
                        const int P)
 {
 
+  auto t1 = std::chrono::system_clock::now();
+  //std::chrono::duration<double> diff2 = t3-t2;
+  //Rcout << "Time to run pre-split: " << diff2.count() << std::endl;
   int nmin = myPara->nmin;
   int i;
 
@@ -57,7 +60,10 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-
+  auto t2 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff1 = t2-t1;
+  //Rcout << "Time to run pre-split: " << diff1.count() << std::endl;
+  
   if (node_fail == 0 || node_n <= 2*nmin)
   {
     TERMINATE:;
@@ -70,10 +76,17 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     int splitVar = -1;
     double splitVal = 0;
-    
+    auto t3 = std::chrono::system_clock::now();
+    //std::chrono::duration<double> diff2 = t3-t2;
+    //Rcout << "Time to run pre-split: " << diff2.count() << std::endl;
     Surv_Find_A_Split(&splitVar, &splitVal, X, Y, Censor, Ncat, Interval, myPara, subjectweight, useObs, node_n, variableweight, variableindex, P);
+    auto t4 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff2 = t4-t3;
+    //Rcout << "Time to split: " << diff2.count() << std::endl;
+    
 
     
+    auto t5 = std::chrono::system_clock::now();
     if (splitVar == -1) // didnt find anything
       goto TERMINATE;
     
@@ -149,6 +162,9 @@ void Surv_Split_A_Node(TREENODE* Node,
     Node->Left = new TREENODE();
     //Node->Right = (TREENODE*) malloc(sizeof(TREENODE));
     Node->Right = new TREENODE();
+    auto t6 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff3 = t6-t5;
+    //Rcout << "Test of time: " << diff3.count() << std::endl;
     
     //free(useObs);
     //delete[] useObs;

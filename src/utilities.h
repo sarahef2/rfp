@@ -134,6 +134,7 @@ typedef struct TREENODE {
 // tree functions
 int TreeSize(TREENODE *root);
 
+void CheckVar(TREENODE *Node, int j, bool& Check);
 
 
 // other utility functions
@@ -184,6 +185,8 @@ void qSort_iindex(ivec& keys,
 
 
 void permute_i(ivec &x, int n);
+
+void permute(vec &x, int n);
 
 // cat variables pack
 

@@ -61,8 +61,13 @@ void survForestBuild(//const double** X,
 
   // normalize the variable weight
 
+  auto start = std::chrono::system_clock::now();
+    
   standardize(variableweight, P);	// this cause precision loss...
 
+  auto t1 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff = t1-start;
+  //Rcout << "Time to run standardize: " << diff.count() << std::endl;
   // parallel computing... set cores
 
   use_cores = imax(1, use_cores);
@@ -80,6 +85,7 @@ void survForestBuild(//const double** X,
 #pragma omp parallel for schedule(static) num_threads(use_cores)
   for (nt = 0; nt < ntrees; nt++) // fit all trees
   {
+    auto t2 = std::chrono::system_clock::now();
     //R_DBP("Start tree %i\n",nt);
     int i;
     // in-bag and out-of-bag data indicator
@@ -124,7 +130,7 @@ void survForestBuild(//const double** X,
       }
       oobag_n = N - size;
     }
-
+    
     // record the observations
     // if the ObsTrack is positive, then its in the fitting set, can have multiple counts
     // if the ObsTrack is zero, then its in the out-of-bag data
@@ -150,9 +156,16 @@ void survForestBuild(//const double** X,
     ivec inbagObs_copy(size);
     for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
 
-    // start to build the
+    auto t3 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff2 = t3-t2;
+    //Rcout << "Time to run pre-split: " << diff2.count() << std::endl;
+    
+    // start to build the tree
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P);
     
+    auto t4 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff3 = t4-t3;
+    //Rcout << "Time to run split: " << diff3.count() << std::endl;
     // covert nodes to tree and NodeRegi.
     int Node = 0;
 
@@ -160,6 +173,9 @@ void survForestBuild(//const double** X,
     
     Record_NodeRegi(&Node, TreeRoot, NodeRegi, nt);//NodeRegi[nt]
 
+    auto t5 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff4 = t5-t4;
+    //Rcout << "Time to record tree: " << diff4.count() << std::endl;
     // summarize what observations are used in this tree
 
     //free(Ytemp);
@@ -169,16 +185,39 @@ void survForestBuild(//const double** X,
     //free(oobagObs);
     //delete[] oobagObs;
 
-    if (importance)
-    {
-      Rprintf("Do importance here \n");
-      bool Usedj = FALSE;
-
-      //for (int j = 0; j < P; j++)
-      //  Usedj = CheckVar(TreeRoot, j);
-
-
-    }
+    // if (importance)
+    // {
+    //   //Rprintf("Do importance here \n");
+    //   bool Usedj = FALSE;
+    // 
+    //   //for (int j = 0; j < P; j++)
+    //   //  Usedj = CheckVar(TreeRoot, j);
+    //    
+    //    int nsim = 5;
+    //    
+    //    vec imp_nt(P);
+    //    for(int j=0; j < P; j++){
+    //      bool Usedj = FALSE;
+    //      CheckVar(TreeRoot, j, Usedj);
+    //      if(Usedj){
+    //        std::vector<  colvec > Xperm = X;
+    //        vec sim(nsim); //Running five simulations with different permutations
+    //        for(int k=0; k < nsim; k++){
+    //          vec Xp(N);
+    //          permute(Xp, N);
+    //          Xperm[j] = Xp;
+    //      }
+    //        
+    //      }else{
+    //        imp_nt[P] = -1;
+    //      }
+    //   }
+    // 
+    // 
+    // }
+    auto t2b = std::chrono::system_clock::now();
+    std::chrono::duration<double> difft = t2b-t2;
+    //Rcout << "Time to run tree: " << difft.count() << std::endl;
 
   }
 
@@ -189,6 +228,29 @@ void survForestBuild(//const double** X,
   return;
 }
 
+vec martin_resid(const ivec Censor, const ivec Y, ivec obs, mat surv_matrix){
+  
+  int Nb = obs.size(); //Find the number of observations
+  vec MResid(Nb); //Create a vector in which to hold the residuals
+  
+  for(int i=0; i < Nb; i++){ //For each observation included
+    MResid[i] = Censor[obs[i]] - log(surv_matrix(obs[i],Y[i])); //Find the Martingale residual
+  }
+  
+  return(MResid);
+}
+
+vec dev_resid(const ivec Censor, ivec obs, vec MResid){
+  
+  int Nb = obs.size(); //Find the number of observations
+  vec DResid(Nb); //Create a vector in which to hold the residuals
+  
+  for(int i=0; i < Nb; i++){ //For each observation included
+    DResid[i] = ((MResid[i] > 0) - (MResid[i] < 0))*sqrt(-2*(MResid[i]+Censor[obs[i]]*log(Censor[obs[i]]-MResid[i]))); //Find the Deviance residual
+  }
+  
+  return(DResid);
+}
 
 
 void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< ivec > > &NodeRegi, int nt)

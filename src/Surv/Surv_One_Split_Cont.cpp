@@ -45,6 +45,9 @@ void Surv_One_Split_Cont(double* cut,
                          int nsplit,
                          int mincount)
 {
+  
+  auto start = std::chrono::system_clock::now();
+  std::chrono::duration<double> score_time = start - start;
   //int *Left_Count_Fail = (int *) malloc((timepoints+1)* sizeof(int));
   //int *Left_Count_Fail = new int[timepoints+1];
   ivec Left_Count_Fail(timepoints+1);
@@ -132,16 +135,28 @@ void Surv_One_Split_Cont(double* cut,
   //int* index = (int *) malloc(node_n * sizeof(int));
   ivec index(node_n);
 
+  auto t2 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff1 = t2-start;
+  //Rcout << "Time for initial setup: " << diff1.count() << std::endl;
+  auto t2b = std::chrono::system_clock::now();
   for (i = 0; i < node_n; i++)
   {
     xtemp[i] = x[useObs[i]];
     index[i] = i;
   }
 
+  auto t3 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff2 = t3-t2b;
+  //Rcout << "Time for pulling node obs: " << diff2.count() << std::endl;
+  auto t3b = std::chrono::system_clock::now();
   qSort_dindex(xtemp, 0, node_n-1, index);
   //index = sort_index(xtemp);
   //xtemp = sort(xtemp);
-
+  auto t4 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff3 = t4-t3b;
+  //Rcout << "Time to sort: " << diff3.count() << std::endl;
+  
+  auto t4b = std::chrono::system_clock::now();
   int lowindex = mincount - 1;
   int highindex = node_n - 1 - lowindex;
 
@@ -150,6 +165,9 @@ void Surv_One_Split_Cont(double* cut,
   while((xtemp[highindex] == xtemp[highindex+1]) & (lowindex < highindex)) highindex --;
   if ((lowindex == highindex) & (xtemp[lowindex] == xtemp[lowindex+1])) return;
 
+  auto t5 = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff4 = t5-t4b;
+  //Rcout << "Time to check for ties: " << diff4.count() << std::endl;
   if (split_gen == 2) // rank split
   {
 
@@ -212,7 +230,11 @@ void Surv_One_Split_Cont(double* cut,
   }
 
 
+  std::chrono::duration<double> tot_init = diff4+diff3+diff2+diff1;
+  //Rcout << "Total initial time: " << tot_init.count() << std::endl;
+  
 
+  auto t5b = std::chrono::system_clock::now();
   if (split_gen == 3) // best split
   {
 
@@ -223,6 +245,7 @@ void Surv_One_Split_Cont(double* cut,
     //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
     //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
 
+    auto t5c = std::chrono::system_clock::now();
     // place initial
     for (i = 0; i<=lowindex; i++)
     {
@@ -233,6 +256,10 @@ void Surv_One_Split_Cont(double* cut,
       }
     }
 
+    auto t6 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff5 = t6-t5c;
+    //Rcout << "Time to place initial: " << diff5.count() << std::endl;
+    auto t6b = std::chrono::system_clock::now();
     for (i = lowindex+1; i<node_n; i++)
     {
       if (Censor[index[i]] == 1)
@@ -241,9 +268,16 @@ void Surv_One_Split_Cont(double* cut,
         Right_Count_Censor[Y[index[i]]]++;
     }
 
+    auto t7b = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff6 = t7b-t6b;
+    //Rcout << "Time to count right: " << diff5.count() << std::endl;
+    auto t7c = std::chrono::system_clock::now();
     // move up and calculate score
     for (i = lowindex; i <= highindex; i++)
     {
+      auto t6c = std::chrono::system_clock::now();
+      //std::chrono::duration<double> diff6 = t7-t6;
+      //Rcout << "Time to move up: " << diff6.count() << std::endl;
       // if ties
       while (xtemp[i] == xtemp[i+1]){
         i++;
@@ -258,20 +292,33 @@ void Surv_One_Split_Cont(double* cut,
         }
       }
 
+      auto t7 = std::chrono::system_clock::now();
+      std::chrono::duration<double> diff6 = t7-t6c;
+      //Rcout << "Time to deal with ties: " << diff6.count() << std::endl;
+      auto t7b = std::chrono::system_clock::now();
       // get score
       if (split_rule == 1)
         temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
 
+      auto t8 = std::chrono::system_clock::now();
+      //std::chrono::duration<double> diff7 = t8-t7b;
+      score_time += t8-t7b;
+      //Rcout << "Time to calculate score: " << diff7.count() << std::endl;
+      auto t8b = std::chrono::system_clock::now();
       if (temp_score > *score)
       {
         *score = temp_score;
         *cut = (xtemp[i] + xtemp[i+1])/2;;
       }
 
+      auto t9 = std::chrono::system_clock::now();
+      std::chrono::duration<double> diff8 = t9-t8b;
+      //Rcout << "Time to replace score: " << diff8.count() << std::endl;
       // get next ready
 
+      auto t9b = std::chrono::system_clock::now();
       if (Censor[index[i+1]] == 1)
       {
         Left_Count_Fail[Y[index[i+1]]]++;
@@ -280,8 +327,20 @@ void Surv_One_Split_Cont(double* cut,
         Left_Count_Censor[Y[index[i+1]]]++;
         Right_Count_Censor[Y[index[i+1]]]--;
       }
+      auto t10 = std::chrono::system_clock::now();
+      std::chrono::duration<double> diff9 = t10-t9b;
+      //Rcout << "Time to get next ready: " << diff9.count() << std::endl;
+      
     }
+    auto t7d = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff7 = t7d-t7c;
+    //Rcout << "Time to move up and calcualte score: " << diff7.count() << std::endl;
   }
+  auto t10b = std::chrono::system_clock::now();
+  std::chrono::duration<double> diff_split = t10b-t5b;
+  //Rcout << "Time for rest: " << diff_split.count() << std::endl;
+  //Rcout << "Time to calculate all scores: " << score_time.count() << std::endl;
+  //Rcout << "Average time: " << score_time.count()/highindex << std::endl;
 
   //free(Left_Count_Fail);
   //delete[] Left_Count_Fail;

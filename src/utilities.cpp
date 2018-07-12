@@ -130,11 +130,14 @@ int TreeSize(TREENODE *root)
   }
 }
 
-bool CheckVar(TREENODE *Node, int j)
+void CheckVar(TREENODE *Node, int j, bool& Check)
 {
-  return FALSE;
-
-
+  if(Node->Var == j){
+    Check = TRUE;
+  }else if(Node->Var > -1){
+    CheckVar(Node->Left,j, Check);
+    CheckVar(Node->Right,j, Check);
+  }
 }
 
 
@@ -154,11 +157,11 @@ void standardize(//double* x
   for (i=0; i<n; i++)
     sumx += x[i];
   
-  x = x/sumx;
+  //x = x/sumx;
  
   //return(x);
-  //for (i=0; i<n; i++)
-  //  x[i] = x[i]/sum;
+  for (i=0; i<n; i++)
+    x[i] = x[i]/sumx;
 }
 
 // random sample a value
@@ -452,6 +455,23 @@ void permute_i(ivec &x, int n)
   int j;
   int temp;
 
+  for (i = 0; i<n-1; i++)
+  {
+    j = random_in_range(i, n);
+    temp = x[i];
+    x[i] = x[j];
+    x[j] = temp;
+  }
+}
+
+// permutation (float)
+
+void permute(vec &x, int n)
+{
+  int i;
+  int j;
+  int temp;
+  
   for (i = 0; i<n-1; i++)
   {
     j = random_in_range(i, n);

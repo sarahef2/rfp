@@ -1,13 +1,13 @@
 library(RLT)
 library(MASS)
-library(survival)
+#library(survival)
 library(randomForestSRC)
 
 #use.cores = 6
 use.cores = 1
 
 P = 100
-trainN = 500
+trainN = 10000
 testN = 1000
 
 rho = 0.25
@@ -15,7 +15,7 @@ V <- rho^abs(outer(1:P, 1:P, "-"))
 
 set.seed(5)
 X = as.matrix(mvrnorm(trainN + testN, mu=rep(0,P), Sigma=V))
-Link <- function(x) x[,1] + 2*x[,P/2]
+Link <- function(x) x[,1] + x[,20] +x[,100] + x[,15]
 
 set.seed(5)
 T = exp(0.5*rnorm(trainN + testN, mean = Link(X)))
@@ -39,9 +39,56 @@ testCensor = Censor[-(1:trainN)]
 
 # test the package
 pre = Sys.time()
-fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 10, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
-                 verbose = TRUE, use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
 Sys.time() - pre
+pre = Sys.time()
+fit = survForest_old(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+#Time difference of 20.11461 secs
+
+pre = Sys.time()
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 2, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+pre = Sys.time()
+fit = survForest_old(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 2, nmin = 15, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+#Time difference of 37.95218 secs
+
+# test the package
+pre = Sys.time()
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 25, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+pre = Sys.time()
+fit = survForest_old(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 25, split.gen = "best", split.rule = "logrank", nsplit = 10,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+#Time difference of 16.88461 secs
+
+pre = Sys.time()
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "random", split.rule = "logrank", nsplit = 1,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+pre = Sys.time()
+fit = survForest_old(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "random", split.rule = "logrank", nsplit = 1,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+#Time difference of 5.707115 secs
+
+pre = Sys.time()
+fit = survForest(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "random", split.rule = "logrank", nsplit = 100,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+pre = Sys.time()
+fit = survForest_old(trainX, trainY, trainCensor, subject.weight = runif(nrow(trainX), 1, 2), ntrees = 1, nmin = 15, split.gen = "random", split.rule = "logrank", nsplit = 100,
+                 use.cores = use.cores, replacement = TRUE,resample.prob = 1)
+Sys.time() - pre
+#Time difference of 10.39944 secs
+
 
 fit$FittedForest
 table(fit$NodeRegi)

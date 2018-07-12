@@ -88,8 +88,17 @@ void Surv_Find_A_Split(int* splitVar,
     temp_val = 0;
     temp_score = -1;
 
+    auto t1 = std::chrono::system_clock::now();
+    //std::chrono::duration<double> diff1 = t2-start;
+    //Rcout << "Time for initial setup: " << diff1.count() << std::endl;
+    
     temp_var = sample_rotate(variableindex, variableweight, j, P);
 
+    auto t2 = std::chrono::system_clock::now();
+    std::chrono::duration<double> diff1 = t2-t1;
+    //Rcout << "Time for sample_rotate: " << diff1.count() << std::endl;
+    
+    
     if (Ncat[temp_var] > 1)
     {
       if (use_sub_weight)
@@ -100,6 +109,7 @@ void Surv_Find_A_Split(int* splitVar,
 
         Surv_One_Split_Cat(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, Ncat[temp_var],
                            timepoints, split_gen, split_rule, nsplit, mincount);
+        
       }
 
     }else{
@@ -110,8 +120,12 @@ void Surv_Find_A_Split(int* splitVar,
                               timepoints, split_gen, split_rule, nsplit, nmin, alpha);
 
       }else{
+        auto t3 = std::chrono::system_clock::now();
         Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
                             timepoints, split_gen, split_rule, nsplit, mincount);
+        auto t4 = std::chrono::system_clock::now();
+        std::chrono::duration<double> diff2 = t4-t3;
+        //Rcout << "Time for split: " << diff2.count() << std::endl;
       }
     }
 
