@@ -77,10 +77,8 @@ void copyParameters(PARAMETERS* myPara, SEXP list)
   myPara->resample_prob = REAL(getListElement(list, "resample.prob"))[0];
   myPara->use_sub_weight = INTEGER(getListElement(list, "use.sub.weight"))[0];
   myPara->use_var_weight = INTEGER(getListElement(list, "use.var.weight"))[0];
-  //myPara->honest = INTEGER(getListElement(list, "honest"))[0];
   myPara->importance = INTEGER(getListElement(list, "importance"))[0];
   myPara->nimpute = INTEGER(getListElement(list, "nimpute"))[0];
-  //myPara->use_cores = INTEGER(getListElement(list, "use.cores"))[0];
   myPara->verbose = INTEGER(getListElement(list, "verbose"))[0];
 
   return;
@@ -109,8 +107,6 @@ void printParameters(PARAMETERS* myPara)
   Rprintf("Variable weights used:                        use.var.weight = %s \n", myPara->use_var_weight ? "Yes" : "No");
   Rprintf("Variable importance calculated:                   importance = %s \n", myPara->importance ? "Yes" : "No");
   Rprintf("Number of imputations for importance:                nimpute = %i \n", myPara->nimpute);
-  //Rprintf("Use honest prediction:                                    honest = %s \n", myPara->honest ? "Yes" : "No");
-  //Rprintf("Use CPU cores:                                         use.cores = %i \n", myPara->use_cores);
   Rprintf("------------------------------------------------------------------------\n");
 }
 
@@ -130,13 +126,14 @@ int TreeSize(TREENODE *root)
   }
 }
 
-void CheckVar(TREENODE *Node, int j, bool& Check)
-{
-  if(Node->Var == j){
-    Check = TRUE;
-  }else if(Node->Var > -1){
-    CheckVar(Node->Left,j, Check);
-    CheckVar(Node->Right,j, Check);
+void CheckVar(mat tree_matrix_nt, int j, bool& Check){
+  int tree_depth = tree_matrix_nt.n_rows;
+  Check = false;
+  for(int i=0; i<tree_depth; i++){
+    if((int) tree_matrix_nt(i,0)-1 == j){
+      Check = true;
+      break;
+    }
   }
 }
 
@@ -145,21 +142,17 @@ void CheckVar(TREENODE *Node, int j, bool& Check)
 
 
 
-
 // other utility functions
 
-void standardize(//double* x
+void standardize(
     vec &x, int n)
 {
-  double sumx=0;//=sum(x);//Can replace if too slow
+  double sumx=0;
   int i;
 
   for (i=0; i<n; i++)
     sumx += x[i];
   
-  //x = x/sumx;
- 
-  //return(x);
   for (i=0; i<n; i++)
     x[i] = x[i]/sumx;
 }
@@ -213,7 +206,6 @@ int weighted_sample(const double* x, int n)
   if (a < WeightTH)
     return weighted_sample(x, n);
   else
-    //error("weighted vector is not properly normalized");
     ::Rf_error("weighted vector is not properly normalized");
 }
 

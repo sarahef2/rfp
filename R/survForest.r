@@ -149,7 +149,7 @@ survForest <- function(x, y, censor,
   # variable importantce
 
   resample.prob = max(0, min(1, resample.prob))
-
+  
   if(importance & !replacement & resample.prob == 1)
     stop("Cannot perform importance if all observations are sampled without replacement")
 

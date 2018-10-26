@@ -45,14 +45,6 @@ double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fa
   LeftN -= Left_Count_Censor[0];
   AllN -= Left_Count_Censor[0] - Right_Count_Censor[0];
   
-  //int LeftN0 = Left_Count_Censor[0];
-  //int AllN0 = Left_Count_Censor[0] - Right_Count_Censor[0];
-
-  auto t2 = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff1 = t2-t1;
-  //Rcout << "Initial time: " << diff1.count() << std::endl;
-  auto t3 = std::chrono::system_clock::now();
-
   for (int j = 1; j <= timepoints && AllN > 1; j++)
   {
     numerator += LeftN*(Left_Count_Fail[j] + Right_Count_Fail[j]) / AllN - Left_Count_Fail[j];
@@ -67,9 +59,6 @@ double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fa
     AllN -= Left_Count_Fail[j] + Left_Count_Censor[j] + Right_Count_Fail[j] + Right_Count_Censor[j];
 
   }
-  auto t4 = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff4 = t4-t3;
-  //Rcout << "Time to loop: " << diff4.count() << std::endl;
 
   return tempscore;
 }

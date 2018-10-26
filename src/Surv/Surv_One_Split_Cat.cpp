@@ -37,7 +37,6 @@ void Surv_One_Split_Cat(double* cut,
                         double* score,
                         const ivec useObs,
                         int node_n,
-                        //const double* x, // x should be called by index useObs[i]
                         const vec x,
                         const ivec Y, // y should be called by index i
                         const ivec Censor, // censor should be called by index i
@@ -54,17 +53,10 @@ void Surv_One_Split_Cat(double* cut,
 
   double temp_score = -1;
 
-  // sumerize all categories in this node
-  //SURVCAT* Cat_Count = (SURVCAT*) malloc(ncat * sizeof(SURVCAT));
+  // summerize all categories in this node
   SURVCAT* Cat_Count = new SURVCAT[ncat];
     
   //Moved since the function couldn't find them
-  //int* goright = new int[ncat];
-  //int* tempRight =new int[ncat];
-  //int* Left_Count_Censor = new int[timepoints+1];
-  //int* Left_Count_Fail = new int[timepoints+1];
-  //int* Right_Count_Censor = new int[timepoints+1];
-  //int* Right_Count_Fail = new int[timepoints+1];
   ivec goright(ncat);
   goright.fill(0);
   ivec tempRight(ncat);
@@ -84,10 +76,7 @@ void Surv_One_Split_Cat(double* cut,
     Cat_Count[i].cat = i;
     Cat_Count[i].f = 0;
     Cat_Count[i].c = 0;
-    //Cat_Count[i].flist = (int*) calloc(timepoints+1, sizeof(int));
-    //Cat_Count[i].flist = new int[timepoints+1];
     Cat_Count[i].flist = ivec(timepoints+1);
-    //Cat_Count[i].clist = (int*) calloc(timepoints+1, sizeof(int));
     Cat_Count[i].clist = ivec(timepoints+1);
   }
 
@@ -136,19 +125,6 @@ void Surv_One_Split_Cat(double* cut,
   if (true_ncat_f <= 1)
     goto NothingToFind;
 
-  //int* goright = (int *) malloc(ncat*sizeof(int));
-  //int* goright = new int[ncat];
-  //int* tempRight = (int *) malloc(ncat*sizeof(int));
-  //int* tempRight =new int[ncat];
-  //int* Left_Count_Censor = (int *) malloc((timepoints+1)*sizeof(int));
-  //int* Left_Count_Censor = new int[timepoints+1];
-  //int* Left_Count_Fail = (int *) malloc((timepoints+1)*sizeof(int));
-  //int* Left_Count_Fail = new int[timepoints+1];
-  //int* Right_Count_Censor = (int *) malloc((timepoints+1)*sizeof(int));
-  //int* Right_Count_Censor = new int[timepoints+1];
-  //int* Right_Count_Fail = (int *) malloc((timepoints+1)*sizeof(int));
-  //int* Right_Count_Fail = new int[timepoints+1];
-
   // if there are too many categories, save some computation by switching to random
   if (split_gen == 3 && true_ncat > 6)
   {
@@ -170,13 +146,6 @@ void Surv_One_Split_Cat(double* cut,
     {
       temp_score = -1;
       LeftN = 0;
-      
-      //memset(goright, 0, ncat*sizeof(int));
-      //memset(tempRight, 0, ncat*sizeof(int));
-      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
       
       // generate a random split that puts some cat into right
       for (i=0; i<true_ncat_f; i++)
@@ -236,17 +205,10 @@ void Surv_One_Split_Cat(double* cut,
   if (split_gen == 3)
   {
 
-    //memset(tempRight, 0, ncat*sizeof(int));
     nsplit = pow(2, true_ncat-1) -1;
     
     for (k = 0; k < nsplit; k++)
     {
-      
-      //memset(goright, 0, ncat*sizeof(int));
-      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(int));
-      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(int));
-      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(int));
       
       LeftN = 0;
       temp_score = -1;
@@ -302,30 +264,9 @@ void Surv_One_Split_Cat(double* cut,
     }
   }
 
-  //free(goright);
-  //delete[] goright;
-  //free(tempRight);
-  //delete[] tempRight;
-  //free(Left_Count_Censor);
-  //delete[] Left_Count_Censor;
-  //free(Left_Count_Fail);
-  //delete[] Left_Count_Fail;
-  //free(Right_Count_Censor);
-  //delete[] Right_Count_Censor;
-  //free(Right_Count_Fail);
-  //delete[] Right_Count_Fail;
-
   NothingToFind: ;
 
-  for (i=0; i< ncat; i++)
-  {
-    //free(Cat_Count[i].flist);
-    //delete[] Cat_Count[i].flist;
-    //free(Cat_Count[i].clist);
-    //delete[] Cat_Count[i].clist;
-  }
 
-  //free(Cat_Count);
   delete[] Cat_Count;
 
 }
@@ -334,7 +275,6 @@ void Surv_One_Split_Cat_W(double* cut,
                           double* score,
                           const ivec useObs,
                           int node_n,
-                          //const double* x, // x should be called by index useObs[i]
                           const colvec x,
                           const ivec Y, // y should be called by index i
                           const ivec Censor, // censor should be called by index i
@@ -354,18 +294,6 @@ void Surv_One_Split_Cat_W(double* cut,
 
   double temp_score = -1;
   
-  //int* goright = (int *) malloc(ncat*sizeof(int));
-  //int* gorightw = new int[ncat];
-  //int* tempRight = (int *) malloc(ncat*sizeof(int));
-  //int* tempRightw = new int[ncat];
-  //double* Left_Count_Censor = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Left_Count_Censorw = new double[timepoints+1];
-  //double* Left_Count_Fail = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Left_Count_Failw = new double[timepoints+1];
-  //double* Right_Count_Censor = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Right_Count_Censorw = new double[timepoints+1];
-  //double* Right_Count_Fail = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Right_Count_Failw = new double[timepoints+1];
   ivec goright(ncat);
   goright.fill(0);
   ivec tempRight(ncat);
@@ -380,8 +308,7 @@ void Surv_One_Split_Cat_W(double* cut,
   Right_Count_Fail.fill(0);
 
 
-  // sumerize all categories in this node
-  //SURVCAT_w* Cat_Count = (SURVCAT_w*) malloc(ncat * sizeof(SURVCAT_w));
+  // summerize all categories in this node
   SURVCAT_w* Cat_Count = new SURVCAT_w[ncat];
 
   for (i=0; i< ncat; i++)
@@ -389,9 +316,7 @@ void Surv_One_Split_Cat_W(double* cut,
     Cat_Count[i].cat = i;
     Cat_Count[i].f = 0;
     Cat_Count[i].c = 0;
-    //Cat_Count[i].flist = (double*) calloc(timepoints+1, sizeof(double));
     Cat_Count[i].flist = vec(timepoints+1);
-    //Cat_Count[i].clist = (double*) calloc(timepoints+1, sizeof(double));
     Cat_Count[i].clist = vec(timepoints+1);
   }
 
@@ -440,19 +365,6 @@ void Surv_One_Split_Cat_W(double* cut,
   if (true_ncat_f <= 1)
     goto NothingToFind;
 
-  //int* goright = (int *) malloc(ncat*sizeof(int));
-  //int* gorightw = new int[ncat];
-  //int* tempRight = (int *) malloc(ncat*sizeof(int));
-  //int* tempRightw = new int[ncat];
-  //double* Left_Count_Censor = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Left_Count_Censorw = new double[timepoints+1];
-  //double* Left_Count_Fail = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Left_Count_Failw = new double[timepoints+1];
-  //double* Right_Count_Censor = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Right_Count_Censorw = new double[timepoints+1];
-  //double* Right_Count_Fail = (double *) malloc((timepoints+1)*sizeof(double));
-  //double* Right_Count_Failw = new double[timepoints+1];
-
   // if there are too many categories, save some computation by switching to random
   if (split_gen == 3 && true_ncat > 6)
   {
@@ -476,18 +388,10 @@ void Surv_One_Split_Cat_W(double* cut,
       LeftWeights = 0;
       RightWeights = 0;
 
-      //memset(gorightw, 0, ncat*sizeof(int));
-      //memset(tempRightw, 0, ncat*sizeof(int));
-      //memset(Left_Count_Censorw, 0, (timepoints+1)*sizeof(double));
-      //memset(Left_Count_Failw, 0, (timepoints+1)*sizeof(double));
-      //memset(Right_Count_Censorw, 0, (timepoints+1)*sizeof(double));
-      //memset(Right_Count_Failw, 0, (timepoints+1)*sizeof(double));
-
       // generate a random split that puts some cat into right
       for (i=0; i<true_ncat_f; i++)
         tempRight[i] = 1;
 
-      //memset(tempRightw, 0, random_in_range(1, true_ncat_f)*sizeof(int));
       permute_i(tempRight, true_ncat_f);
 
       // We should be checking if there will be enough observations for each side,
@@ -542,17 +446,10 @@ void Surv_One_Split_Cat_W(double* cut,
   if (split_gen == 3)
   {
 
-    //memset(tempRight, 0, ncat*sizeof(int));
     nsplit = pow(2, true_ncat-1) -1;
 
     for (k = 0; k < nsplit; k++)
     {
-
-      //memset(goright, 0, ncat*sizeof(int));
-      //memset(Left_Count_Censor, 0, (timepoints+1)*sizeof(double));
-      //memset(Left_Count_Fail, 0, (timepoints+1)*sizeof(double));
-      //memset(Right_Count_Censor, 0, (timepoints+1)*sizeof(double));
-      //memset(Right_Count_Fail, 0, (timepoints+1)*sizeof(double));
 
       LeftWeights = 0;
       RightWeights = 0;
@@ -610,30 +507,8 @@ void Surv_One_Split_Cat_W(double* cut,
     }
   }
 
-  //free(goright);
-  //delete[] gorightw;
-  //free(tempRight);
-  //delete[] tempRightw;
-  //free(Left_Count_Censor);
-  //delete[] Left_Count_Censorw;
-  //free(Left_Count_Fail);
-  //delete[] Left_Count_Failw;
-  //free(Right_Count_Censor);
-  //delete[] Right_Count_Censorw;
-  //free(Right_Count_Fail);
-  //delete[] Right_Count_Censorw;
-
   NothingToFind:
 
-  //for (i=0; i< ncat; i++)
-  //{
-    //free(Cat_Count[i].flist);
-    //delete[] Cat_Count[i].flist;
-    //free(Cat_Count[i].clist);
-    //delete[] Cat_Count[i].clist;
-  //}
-
-  //free(Cat_Count);
   delete[] Cat_Count;
 
 }

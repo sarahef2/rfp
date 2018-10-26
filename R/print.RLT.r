@@ -30,7 +30,7 @@ survForest_print <- function(x, ...)
 
   if (class(x)[2] == "predict")
   {
-    cat(paste("survForest prediction for", ncol(x$surv), "subjects on", nrow(x$surv), "unique time points: \n"))
+    cat(paste("survForest prediction for", nrow(x$surv), "subjects on", ncol(x$surv), "unique time points: \n"))
     cat(paste("Minimum time point:", round(min(x$timepoints), 6), "\n"))
     cat(paste("Maximum time point:", round(max(x$timepoints), 6), "\n"))
   }

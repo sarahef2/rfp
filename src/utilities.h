@@ -83,10 +83,8 @@ typedef struct PARAMETERS{
   double resample_prob;
   int use_sub_weight;
   int use_var_weight;
-  //int honest;
   int importance;
   int nimpute;
-  //int use_cores;
   int verbose;
 } PARAMETERS;
 
@@ -126,7 +124,7 @@ typedef struct TREENODE {
   int Var;
   double Val;
   int NodeSize;
-  ivec NodeObs;//int* NodeObs;
+  ivec NodeObs;
   struct TREENODE *Left, *Right;
 } TREENODE;
 
@@ -134,12 +132,12 @@ typedef struct TREENODE {
 // tree functions
 int TreeSize(TREENODE *root);
 
-void CheckVar(TREENODE *Node, int j, bool& Check);
+void CheckVar(mat tree_matrix_nt, int j, bool& Check);
 
 
 // other utility functions
 
-void standardize(//double*
+void standardize(
     vec&, int);
 int imin(int, int);
 int imax(int, int);

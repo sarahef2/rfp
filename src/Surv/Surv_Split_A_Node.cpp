@@ -32,7 +32,6 @@ using namespace Rcpp;
 # include "..//utilities.h"
 
 void Surv_Split_A_Node(TREENODE* Node,
-                       //const double** X,
                        std::vector<  colvec > X,
                        const ivec Y,
                        const ivec Censor,
@@ -44,12 +43,10 @@ void Surv_Split_A_Node(TREENODE* Node,
                        const int node_n,
                        vec variableweight,
                        ivec variableindex,
-                       const int P)
+                       const int P,
+                       int &counter)
 {
 
-  auto t1 = std::chrono::system_clock::now();
-  //std::chrono::duration<double> diff2 = t3-t2;
-  //Rcout << "Time to run pre-split: " << diff2.count() << std::endl;
   int nmin = myPara->nmin;
   int i;
 
@@ -60,10 +57,6 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-  auto t2 = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff1 = t2-t1;
-  //Rcout << "Time to run pre-split: " << diff1.count() << std::endl;
-  
   if (node_fail == 0 || node_n <= 2*nmin)
   {
     TERMINATE:;
@@ -76,17 +69,8 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     int splitVar = -1;
     double splitVal = 0;
-    auto t3 = std::chrono::system_clock::now();
-    //std::chrono::duration<double> diff2 = t3-t2;
-    //Rcout << "Time to run pre-split: " << diff2.count() << std::endl;
-    Surv_Find_A_Split(&splitVar, &splitVal, X, Y, Censor, Ncat, Interval, myPara, subjectweight, useObs, node_n, variableweight, variableindex, P);
-    auto t4 = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff2 = t4-t3;
-    //Rcout << "Time to split: " << diff2.count() << std::endl;
-    
+    Surv_Find_A_Split(&splitVar, &splitVal, X, Y, Censor, Ncat, Interval, myPara, subjectweight, useObs, node_n, variableweight, variableindex, P, counter);
 
-    
-    auto t5 = std::chrono::system_clock::now();
     if (splitVar == -1) // didnt find anything
       goto TERMINATE;
     
@@ -96,15 +80,12 @@ void Surv_Split_A_Node(TREENODE* Node,
     int LeftSize = 0;
     int RightSize = 0;
 
-    //int* useObsLeft = (int *) malloc(node_n * sizeof(int));
     ivec useObsLeft(node_n);
-    //int* useObsRight = (int *) malloc(node_n * sizeof(int));
     ivec useObsRight(node_n);
     
     if (Ncat[splitVar] > 1)
     {
 
-      //int* goright = (int *) malloc(Ncat[splitVar]*sizeof(int));
       ivec goright(Ncat[splitVar]);
       unpack(splitVal, Ncat[splitVar], goright);
 
@@ -121,9 +102,6 @@ void Surv_Split_A_Node(TREENODE* Node,
       }
       useObsLeft.resize(LeftSize);
       useObsRight.resize(RightSize);
-
-      //free(goright);
-      //delete[] goright;
 
     }else{
 
@@ -144,11 +122,6 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     if (LeftSize == 0 || RightSize == 0)
     {
-      //free(useObsLeft);
-      //delete[] useObsLeft;
-      //free(useObsRight);
-      //delete[] useObsRight;
-      
       R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
       goto TERMINATE;
     }
@@ -158,22 +131,14 @@ void Surv_Split_A_Node(TREENODE* Node,
     Node->Var = splitVar;			// Splitting variable
     Node->Val = splitVal;		  // Splitting value
 
-    //Node->Left = (TREENODE*) malloc(sizeof(TREENODE));
     Node->Left = new TREENODE();
-    //Node->Right = (TREENODE*) malloc(sizeof(TREENODE));
     Node->Right = new TREENODE();
-    auto t6 = std::chrono::system_clock::now();
-    std::chrono::duration<double> diff3 = t6-t5;
-    //Rcout << "Test of time: " << diff3.count() << std::endl;
-    
-    //free(useObs);
-    //delete[] useObs;
 
     Surv_Split_A_Node(Node->Left, X, Y, Censor, Ncat, Interval, myPara,
-                      subjectweight, useObsLeft, LeftSize, variableweight, variableindex, P);
+                      subjectweight, useObsLeft, LeftSize, variableweight, variableindex, P, counter);
 
     Surv_Split_A_Node(Node->Right, X, Y, Censor, Ncat, Interval, myPara,
-                      subjectweight, useObsRight, RightSize, variableweight, variableindex, P);
+                      subjectweight, useObsRight, RightSize, variableweight, variableindex, P, counter);
 
   }
 
