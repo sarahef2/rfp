@@ -109,9 +109,6 @@ void Surv_One_Split_Cont(double* cut,
   vec xtemp(node_n);
   ivec index(node_n);
 
-  auto t2 = std::chrono::system_clock::now();
-  std::chrono::duration<double> diff1 = t2-start;
-  auto t2b = std::chrono::system_clock::now();
   for (i = 0; i < node_n; i++)
   {
     xtemp[i] = x[useObs[i]];
