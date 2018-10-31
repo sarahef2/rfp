@@ -36,7 +36,7 @@ using namespace Rcpp;
 
 double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints)
 {
-  auto t1 = std::chrono::system_clock::now();
+  //auto t1 = std::chrono::system_clock::now();
   double numerator = 0;
   double denominator = 0;
   double tempscore = -1;

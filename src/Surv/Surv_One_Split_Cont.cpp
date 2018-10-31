@@ -33,16 +33,16 @@ using namespace Rcpp;
 
 void Surv_One_Split_Cont(double* cut,
                          double* score,
-                         const ivec useObs,
+                         const ivec &useObs,
                          int node_n,
-                         const colvec x,
-                         const ivec Y, // y should be called by index i
-                         const ivec Censor, // censor should be called by index i
-                         int timepoints,
-                         int split_gen,
-                         int split_rule,
-                         int nsplit,
-                         int mincount)
+                         const colvec &x,
+                         const ivec &Y, // y should be called by index i
+                         const ivec &Censor, // censor should be called by index i
+                         int &timepoints,
+                         int &split_gen,
+                         int &split_rule,
+                         int &nsplit,
+                         int &mincount)
 {
   ivec Left_Count_Fail(timepoints+1);
   Left_Count_Fail.fill(0);
@@ -117,7 +117,7 @@ void Surv_One_Split_Cont(double* cut,
 
   qSort_dindex(xtemp, 0, node_n-1, index);
 
-  auto t4b = std::chrono::system_clock::now();
+  //auto t4b = std::chrono::system_clock::now();
   int lowindex = mincount - 1;
   int highindex = node_n - 1 - lowindex;
 
@@ -184,7 +184,7 @@ void Surv_One_Split_Cont(double* cut,
 
     //R_DBP("run best splitting rule");
 
-    auto t5c = std::chrono::system_clock::now();
+    //auto t5c = std::chrono::system_clock::now();
     // place initial
     for (i = 0; i<=lowindex; i++)
     {
@@ -206,7 +206,7 @@ void Surv_One_Split_Cont(double* cut,
     // move up and calculate score
     for (i = lowindex; i <= highindex; i++)
     {
-      auto t6c = std::chrono::system_clock::now();
+      //auto t6c = std::chrono::system_clock::now();
       // if ties
       while (xtemp[i] == xtemp[i+1]){
         i++;
@@ -255,18 +255,18 @@ void Surv_One_Split_Cont(double* cut,
 
 void Surv_One_Split_Cont_W(double* cut,
                            double* score,
-                           const ivec useObs,
+                           const ivec &useObs,
                            int node_n,
-                           const vec x,
-                           const ivec Y, // y should be called by index i
-                           const ivec Censor, // censor should be called by index i
-                           const vec subjectweight, // subjectweight should be called by index useObs[i]
-                           int timepoints,
-                           int split_gen,
-                           int split_rule,
-                           int nsplit,
-                           int nmin,
-                           int alpha)
+                           const vec &x,
+                           const ivec &Y, // y should be called by index i
+                           const ivec &Censor, // censor should be called by index i
+                           const vec &subjectweight, // subjectweight should be called by index useObs[i]
+                           int &timepoints,
+                           int &split_gen,
+                           int &split_rule,
+                           int &nsplit,
+                           int &nmin,
+                           int &alpha)
 {
 
   vec Left_Count_Fail(timepoints+1);

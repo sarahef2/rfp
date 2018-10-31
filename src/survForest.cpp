@@ -56,7 +56,7 @@ List survForestFit(arma::mat datasetX_R,
   int N = myPara->N;
   int P = myPara->P;
   int ntrees = myPara->ntrees;
-  int nmin = myPara->nmin;
+  //int nmin = myPara->nmin;
   int Nfail = myPara->Nfail; //Used in variable importance calculations
   
   int i;
@@ -230,8 +230,8 @@ void survForestPrint(List parameters_R)
 
   // get tree matrix
 
-  int TreeWidth = 4;
-  int TreeLength;
+  //int TreeWidth = 4;
+  //int TreeLength;
 
   std::vector< mat > tree_matrix(ntrees);
   std::vector< std::vector< ivec > > NodeRegi(ntrees);
@@ -274,7 +274,7 @@ void survForestPrint(List parameters_R)
                         (const ivec) subj_id,
                         (const int) -1,
                         (const ivec) tmp,
-                        0,
+                        (int) 0,
                         false,
                         use_cores);
 

@@ -88,7 +88,7 @@ void survForestBuild(const std::vector<  colvec > X,
 #pragma omp parallel for schedule(static) num_threads(use_cores)
   for (nt = 0; nt < ntrees; nt++) // fit all trees
   {
-    auto t2 = std::chrono::system_clock::now();
+    //auto t2 = std::chrono::system_clock::now();
     //R_DBP("Start tree %i\n",nt);
     int i;
     // in-bag and out-of-bag data indicator
@@ -178,127 +178,6 @@ void survForestBuild(const std::vector<  colvec > X,
     tree_matrix[nt] = FittedTree;
     // summarize what observations are used in this tree
 
-    if(false) //(old version of importance)
-    {
-      //Rprintf("Doing importance here...  Incomplete, in progress \n");
-      bool Usedj = false;
-      
-      //Currently, doing this twice- once here, once in survForest.cpp.  May want to only do once
-      mat FittedTree;
-      int TreeLength;
-      TreeLength = TreeSize(Forest[nt]);
-      Node = 0;
-      
-      FittedTree.set_size(TreeLength,4);
-      
-      //Convert tree structure nodes into matrix
-      Record_Tree(&Node, Forest[nt], FittedTree, TreeLength);
-      std::vector< mat > tree_matrix_tmp(1);
-      std::vector< std::vector< ivec > > NodeRegi_tmp(1);
-      tree_matrix_tmp[0] = FittedTree;
-      tree_matrix[nt] = FittedTree;
-      NodeRegi_tmp[0] = NodeRegi[nt];
-      
-      //Find the prediction without any variables permuted
-      //Has to be done outside the loop
-      mat surv_matrix_nt(oobag_n,Nfail+1);
-      surv_matrix_nt.fill(0);
-      
-      ivec tmp(N);
-      tmp.fill(0);
-      
-      PredictSurvivalKernel((const std::vector< colvec >) X,
-                            Y,
-                            Censor,
-                            Ncat,
-                            subjectweight,
-                            (const std::vector< mat >) tree_matrix_tmp,
-                            (const imat) ObsTrack,
-                            ObsTerminal,
-                            (const std::vector< std::vector< ivec > >) NodeRegi_tmp,
-                            surv_matrix_nt,
-                            (const PARAMETERS*) myPara,
-                            oobag_n,
-                            (const ivec) oobagObs,
-                            (const int) -1,
-                            (const ivec) tmp,
-                            0,
-                            false,
-                            use_cores);
-
-      vec resids(oobag_n);
-      resids.fill(0);
-      dev_resid(Censor, Y, oobagObs, oobag_n, surv_matrix_nt, resids);
-      double Dev_MSE = 0;
-      for(int d=0; d < oobag_n; d++){
-        Dev_MSE += resids[d]*resids[d];
-      }
-
-      //May want to make this variable?
-      int nsim = 1;
-
-       for(int j=0; j < P; j++){
-         bool Usedj = false;
-         vec imp_sim(nsim);
-         imp_sim.fill(0);
-         CheckVar(tree_matrix[nt], j, Usedj);
-         if(Usedj){
-           for(int k=0; k < nsim; k++){
-             ivec perm_j = oobagObs;
-             permute_i(perm_j, oobag_n);
-
-             mat surv_matrix_perm(oobag_n,Nfail+1);
-             surv_matrix_perm.fill(0);
-             
-             PredictSurvivalKernel((const std::vector< colvec >) X,
-                                   Y,
-                                   Censor,
-                                   Ncat,
-                                   subjectweight,
-                                   (const std::vector< mat >) tree_matrix_tmp, //tree_matrix, //Figure out
-                                   (const imat) ObsTrack,
-                                   ObsTerminal,
-                                   (const std::vector< std::vector< ivec > >) NodeRegi_tmp, //NodeRegi, //Figure out
-                                   surv_matrix_perm,
-                                   (const PARAMETERS*) myPara,
-                                   oobag_n,
-                                   (const ivec) oobagObs,
-                                   (const int) j,
-                                   (const ivec) perm_j,
-                                   0,
-                                   false,
-                                   use_cores);
-             vec resids_perm(oobag_n);
-             resids_perm.fill(0);
-             dev_resid(Censor, Y, oobagObs, oobag_n, surv_matrix_perm, resids_perm);
-             double Dev_MSE_perm = 0;
-             for(int d=0; d < oobag_n; d++){
-               if(resids_perm[d]!=resids_perm[d]) Rcout << "oobagObs[d]: " << oobagObs[d]<< " ResidualsP[d]: " << resids_perm[d] << std::endl;
-               Dev_MSE_perm += resids_perm[d]*resids_perm[d];
-             }
-             imp_sim[k] = Dev_MSE_perm;
-          }
-           for(int m = 0; m < nsim; m++){
-             VarImp_store(nt,j) += imp_sim[m] / nsim; //Calculate the mean of the simulated versions
-           }
-           VarImp_store(nt,j) = VarImp_store(nt,j) / Dev_MSE - 1;
-
-          }else{
-            VarImp_store(nt,j) = 0;
-          }
-       }
-
-
-    }
-
-  }
-  if(false)//(old version of importance)
-    {
-    for(nt = 0; nt < ntrees; nt++){
-      for(int j = 0; j < P; j++){
-        VarImp[j] += VarImp_store(nt,j)/ntrees;
-      }
-    }
   }
 
   if(importance){ //New version of importance
@@ -403,6 +282,7 @@ void dev_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv
           }
         }
       }
+      //Rcout << "-infty res replace with " << minMR << std::endl;;
       MResid[i] = minMR;
     } 
     DResid[i] = ((MResid[i] > 0) - (MResid[i] < 0))*sqrt(-2*(MResid[i]+Censor[obs[i]]*log(Censor[obs[i]]-MResid[i]))); //Find the Deviance residual
@@ -429,6 +309,7 @@ void dev_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv
           }
         }
       }
+      //Rcout << "+infty res replace with " << maxDR << std::endl;;
       DResid[i] = maxDR;
     }
   }

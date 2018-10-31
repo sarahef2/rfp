@@ -60,7 +60,7 @@ void Surv_Find_A_Split(int* splitVar,
   int j;
 
   int mincount = imax(nmin, (int) alpha*node_n);
-  double minweight = (double) imax(nmin, (int) alpha*node_n) / N;
+  //double minweight = (double) imax(nmin, (int) alpha*node_n) / N;
 
   // collapse Y into contiguous integers
 

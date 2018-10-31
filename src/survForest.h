@@ -128,31 +128,31 @@ void Surv_One_Split_Cat(double* cut,
 
 void Surv_One_Split_Cont(double* cut,
                         double* score,
-                        const ivec useObs,
+                        const ivec &useObs,
                         int node_n,
-                        const colvec x,
-                        const ivec Y,
-                        const ivec Censor,
-                        int timepoints,
-                        int split_gen,
-                        int split_rule,
-                        int nsplit,
-                        int mincount);
+                        const colvec &x,
+                        const ivec &Y,
+                        const ivec &Censor,
+                        int &timepoints,
+                        int &split_gen,
+                        int &split_rule,
+                        int &nsplit,
+                        int &mincount);
 
 void Surv_One_Split_Cont_W(double* cut,
                         double* score,
-                        const ivec useObs,
+                        const ivec &useObs,
                         int node_n,
-                        const vec x,
-                        const ivec Y,
-                        const ivec Censor,
-                        const vec subjectweight,
-                        int timepoints,
-                        int split_gen,
-                        int split_rule,
-                        int nsplit,
-                        int nmin,
-                        int alpha);
+                        const vec &x,
+                        const ivec &Y,
+                        const ivec &Censor,
+                        const vec &subjectweight,
+                        int &timepoints,
+                        int &split_gen,
+                        int &split_rule,
+                        int &nsplit,
+                        int &nmin,
+                        int &alpha);
 
 double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
@@ -166,57 +166,57 @@ double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_
 
 mat survForestPredict(mat, List, imat, ivec, ivec, vec, imat, List, List, int);
 
-void PredictSurvivalKernel(const std::vector< colvec > X,
-                           const ivec Y,
-                           const ivec Censor,
-                           const ivec Ncat,
-                           const vec subjectweight,
-                           const std::vector< mat > tree_matrix,
-                           const imat ObsTrack,
+void PredictSurvivalKernel(const std::vector< colvec > &X,
+                           const ivec &Y,
+                           const ivec &Censor,
+                           const ivec &Ncat,
+                           const vec &subjectweight,
+                           const std::vector< mat > &tree_matrix,
+                           const imat &ObsTrack,
                            imat &ObsTerminal, //Save the terminal node number of the observations in each tree
-                           const std::vector< std::vector< ivec > > NodeRegi,
+                           const std::vector< std::vector< ivec > > &NodeRegi,
                            mat &surv_matrix,
                            const PARAMETERS* myPara,
                            int testN,
-                           const ivec use_obs, //The index of the obserations to predict
-                           const int perm_ind, //The variable index, if any, permuted (for variable importance)
-                           const ivec perm_j, //The permuted variable (for variable importance)
+                           const ivec &use_obs, //The index of the obserations to predict
+                           const int &perm_ind, //The variable index, if any, permuted (for variable importance)
+                           const ivec &perm_j, //The permuted variable (for variable importance)
                            int oob_only, //Should prediction be run on only oob obs
                            bool InTrainSet,
                            int use_cores);
 
 void Get_Kernel_Weights(int subj,
-                        const std::vector< vec > X,
-                        const ivec Ncat,
-                        const mat tree_matrix_nt,
+                        const std::vector< vec > &X,
+                        const ivec &Ncat,
+                        const mat &tree_matrix_nt,
                         imat &ObsTerminal,
-                        const std::vector< ivec > NodeRegi_nt,
+                        const std::vector< ivec > &NodeRegi_nt,
                         vec &weights,
-                        const int N,
-                        bool InTrainSet,
-                        const int perm_ind, //The variable index, if any, permuted (for variable importance)
-                        const ivec perm_j, //The permuted variable (for variable importance)
-                        int subj_perm_loc,
-                        int nt
+                        const int &N,
+                        bool &InTrainSet,
+                        const int &perm_ind, //The variable index, if any, permuted (for variable importance)
+                        const ivec &perm_j, //The permuted variable (for variable importance)
+                        int &subj_perm_loc,
+                        int &nt
                           );
 
 void Get_Kernel_Weights_w(int subj,
-                          const std::vector< vec > X,
-                          const ivec Ncat,
-                          const mat tree_matrix_nt,
+                          const std::vector< vec > &X,
+                          const ivec &Ncat,
+                          const mat &tree_matrix_nt,
                           imat &ObsTerminal,
-                          const std::vector< ivec > NodeRegi_nt,
-                          const vec subjectweight,
+                          const std::vector< ivec > &NodeRegi_nt,
+                          const vec &subjectweight,
                           vec &weights,
-                          const int N,
-                          bool InTrainSet,
-                          const int perm_ind, //The variable index, if any, permuted (for variable importance)
-                          const ivec perm_j, //The permuted variable (for variable importance)
-                          int subj_perm_loc,
-                          int nt
+                          const int &N,
+                          bool &InTrainSet,
+                          const int &perm_ind, //The variable index, if any, permuted (for variable importance)
+                          const ivec &perm_j, //The permuted variable (for variable importance)
+                          int &subj_perm_loc,
+                          int &nt
                             );
 
-int get_terminal(int node, int subj, const std::vector< vec > X, const ivec Ncat, const mat tree_matrix_nt, const int perm_ind, const ivec perm_j, int subj_perm_loc);
+int get_terminal(int node, int &subj, const std::vector< vec > &X, const ivec &Ncat, const mat &tree_matrix_nt, const int &perm_ind, const ivec &perm_j, int &subj_perm_loc);
 
 void martin_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv_matrix, vec &MResids);
 
