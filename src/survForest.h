@@ -21,9 +21,8 @@
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
-//# include <Rdefines.h>
 # include <R.h>
+using namespace Rcpp;
 
 # include "utilities.h"
 
@@ -33,24 +32,24 @@
 
 SEXP survForestFit(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 
-void survForestBuild(const std::vector<  colvec > X,
-                     const ivec Y,
-                     const ivec Censor,
-                     const ivec Ncat,
-                     const vec Interval,
+void survForestBuild(const std::vector<  colvec > &X,
+                     const ivec &Y,
+                     const ivec &Censor,
+                     const ivec &Ncat,
+                     const vec &Interval,
                      const PARAMETERS* myPara,
-                     const vec subjectweight,
-                     const ivec subj_id,
-                     const int N,
-                     vec variableweight,
-                     ivec var_id,
-                     const int P,
+                     const vec &subjectweight,
+                     const ivec &subj_id,
+                     const int &N,
+                     vec &variableweight,
+                     ivec &var_id,
+                     const int &P,
                      TREENODE** Forest,
                      imat &ObsTrack,
                      imat &ObsTerminal,
                      std::vector< std::vector< ivec > > &NodeRegi,
                      vec &VarImp,
-                     int use_cores,
+                     int &use_cores,
                      mat &oob_surv_matrix,
                      vec &oob_residuals,
                      int &counter);
@@ -63,17 +62,17 @@ void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength)
 
 void Surv_Split_A_Node(TREENODE* Node,
                   const std::vector<  colvec > X,
-                  const ivec Y,
-                  const ivec Censor,
-                  const ivec Ncat,
-                  const vec Interval,
+                  const ivec &Y,
+                  const ivec &Censor,
+                  const ivec &Ncat,
+                  const vec &Interval,
                   const PARAMETERS* myPara,
-                  const vec subjectweight,
-                  ivec useObs,
-                  const int node_n,
-                  vec variableweight,
-                  ivec variableindex,
-                  const int P,
+                  const vec &subjectweight,
+                  ivec &useObs,
+                  const int &node_n,
+                  vec &variableweight,
+                  ivec &variableindex,
+                  const int &P,
                   int &counter);
 
 void Surv_Find_A_Split(int* splitVar,
@@ -218,7 +217,7 @@ void Get_Kernel_Weights_w(int subj,
 
 int get_terminal(int node, int &subj, const std::vector< vec > &X, const ivec &Ncat, const mat &tree_matrix_nt, const int &perm_ind, const ivec &perm_j, int &subj_perm_loc);
 
-void martin_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv_matrix, vec &MResids);
+void martin_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &MResids);
 
-void dev_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv_matrix, vec &DResid);
+void dev_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &DResid);
 #endif

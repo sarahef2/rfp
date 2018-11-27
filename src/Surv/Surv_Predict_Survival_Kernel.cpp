@@ -72,7 +72,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
   mat remove_matrix(testN,Nfail+1);
   remove_matrix.fill(0);
 
-  #pragma omp parallel for schedule(guided) num_threads(use_cores)
+ #pragma omp parallel for schedule(guided) num_threads(use_cores)
   for (int i = 0; i < testN; i++)
   {
     vec weights(N);
@@ -98,7 +98,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
         }
       }
     }
-
+    
     double weights_sum = 0;
 
     for (j = 0; j < N; j++)
@@ -113,7 +113,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
 
     surv_matrix(i,0) = 1;
     weights_sum -= remove_matrix(i,0);
-
+    
     // KM survival function
     for (j = 1; j <= Nfail; j++)
     {

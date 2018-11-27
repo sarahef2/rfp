@@ -19,11 +19,8 @@
 //
 //  **********************************************************************
 
-//# include <Rdefines.h>
-//# include <R.h>
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
 # include <Rmath.h>
 using namespace Rcpp;
 
@@ -33,17 +30,17 @@ using namespace Rcpp;
 
 void Surv_Split_A_Node(TREENODE* Node,
                        std::vector<  colvec > X,
-                       const ivec Y,
-                       const ivec Censor,
-                       const ivec Ncat,
-                       const vec Interval,
+                       const ivec &Y,
+                       const ivec &Censor,
+                       const ivec &Ncat,
+                       const vec &Interval,
                        const PARAMETERS* myPara,
-                       const vec subjectweight,
-                       ivec useObs,
-                       const int node_n,
-                       vec variableweight,
-                       ivec variableindex,
-                       const int P,
+                       const vec &subjectweight,
+                       ivec &useObs,
+                       const int &node_n,
+                       vec &variableweight,
+                       ivec &variableindex,
+                       const int &P,
                        int &counter)
 {
 

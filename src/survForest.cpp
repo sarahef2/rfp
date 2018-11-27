@@ -93,6 +93,7 @@ List survForestFit(arma::mat datasetX_R,
   ObsTerminal.fill(-1);
   std::vector< std::vector< ivec > > NodeRegi(ntrees);
   vec VarImp(P);
+  VarImp.fill(0);
 
   ivec subj_id(N);
   for (i = 0; i  < N; i++) subj_id(i) = i;
@@ -251,6 +252,7 @@ void survForestPrint(List parameters_R)
 
   // get NodeRegi
   mat surv_matrix(testN,Nfail+1);
+  surv_matrix.fill(0);
   ivec tmp(testN);
   tmp.fill(0);
   

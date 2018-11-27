@@ -32,24 +32,24 @@ using namespace Rcpp;
 # include "..//survForest.h"
 # include "..//utilities.h"
 
-void survForestBuild(const std::vector<  colvec > X,
-                     const ivec Y,
-                     const ivec Censor,
-                     const ivec Ncat,
-                     const vec Interval,
+void survForestBuild(const std::vector<  colvec > &X,
+                     const ivec &Y,
+                     const ivec &Censor,
+                     const ivec &Ncat,
+                     const vec &Interval,
                      const PARAMETERS* myPara,
-                     const vec subjectweight,
-                     const ivec subj_id,
-                     const int N,
-                     vec variableweight,
-                     ivec var_id,
-                     const int P,
+                     const vec &subjectweight,
+                     const ivec &subj_id,
+                     const int &N,
+                     vec &variableweight,
+                     ivec &var_id,
+                     const int &P,
                      TREENODE** Forest,
                      imat &ObsTrack,
                      imat &ObsTerminal,
                      std::vector< std::vector< ivec > > &NodeRegi,
                      vec &VarImp,
-                     int use_cores,
+                     int &use_cores,
                      mat &oob_surv_matrix,
                      vec &oob_residuals,
                      int &counter)
@@ -209,7 +209,7 @@ void survForestBuild(const std::vector<  colvec > X,
 
     //May want to make this variable?
     int nsim = 1;
-#pragma omp parallel for schedule(static) num_threads(use_cores)
+
     for(int j=0; j < P; j++){
       vec imp_sim(nsim);
       imp_sim.fill(0);
@@ -245,11 +245,16 @@ void survForestBuild(const std::vector<  colvec > X,
           for(int d=0; d < N; d++){
             Dev_MSE_perm += resids_perm[d]*resids_perm[d];
           }
+          if(Dev_MSE_perm!=Dev_MSE_perm) Rcout << "Dev_MSE_perm is missing var "<< j<<std::endl;;
           imp_sim[k] = Dev_MSE_perm;
-        }
+          if(imp_sim[k]!=imp_sim[k]) Rcout << "imp_sim[k] is missing var "<< j<<std::endl;;
+      }
         for(int m = 0; m < nsim; m++){
           VarImp[j] += imp_sim[m] / nsim;
+          if(VarImp[j]!=VarImp[j]) Rcout << "A) VarImp[j] is missing var "<< j<< " imp_sim[m] "<< imp_sim[m]<<" nsim "<< nsim<<std::endl;;
         }
+        if(VarImp[j]!=VarImp[j]) Rcout << "B) VarImp[j] is missing var "<< j<<std::endl;;
+        
         VarImp[j] = VarImp[j] / Dev_MSE - 1;
     }
     
@@ -259,7 +264,7 @@ void survForestBuild(const std::vector<  colvec > X,
   return;
 }
 
-void martin_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv_matrix, vec &MResid){
+void martin_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &MResid){
   
 
   for(int i=0; i < Nb; i++){ //For each observation included
@@ -267,7 +272,7 @@ void martin_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat s
   }
 }
 
-void dev_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv_matrix, vec &DResid){
+void dev_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &DResid){
   vec MResid(Nb);
   MResid.fill(0);
   martin_resid(Censor, Y, obs, Nb, surv_matrix, MResid);
@@ -286,6 +291,8 @@ void dev_resid(const ivec Censor, const ivec Y, const ivec obs, int Nb, mat surv
       MResid[i] = minMR;
     } 
     DResid[i] = ((MResid[i] > 0) - (MResid[i] < 0))*sqrt(-2*(MResid[i]+Censor[obs[i]]*log(Censor[obs[i]]-MResid[i]))); //Find the Deviance residual
+    if(Censor[obs[i]]==0 and MResid[i]==0) DResid[i] = 0;
+    if(DResid[i]!=DResid[i]) Rcout << "Missing Residual: "<< MResid[i]<< " "<< Censor[obs[i]]<< " "<< Y[obs[i]]<<" "<<surv_matrix(i,Y[obs[i]])<<" " << MResid[i]+Censor[obs[i]]*log((Censor[obs[i]]-MResid[i])+.00000001) << std::endl;;
   }
   
   double maxDR = -1000;
