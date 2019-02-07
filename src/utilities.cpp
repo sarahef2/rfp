@@ -72,6 +72,7 @@ void copyParameters(PARAMETERS* myPara, SEXP list)
   myPara->split_rule = INTEGER(getListElement(list, "split.rule"))[0];
   myPara->nsplit= INTEGER(getListElement(list, "nsplit"))[0];
   myPara->nmin = INTEGER(getListElement(list, "nmin"))[0];
+  myPara->nmin_control = INTEGER(getListElement(list, "nmin.control"))[0];
   myPara->alpha = REAL(getListElement(list, "alpha"))[0];
   myPara->replacement = INTEGER(getListElement(list, "replacement"))[0];
   myPara->resample_prob = REAL(getListElement(list, "resample.prob"))[0];
@@ -100,6 +101,7 @@ void printParameters(PARAMETERS* myPara)
   if (myPara->split_gen < 3)
     Rprintf("Number of random splits:                              nsplit = %i \n", myPara->nsplit);
   Rprintf("Minimum terminal node size:                             nmin = %i \n", myPara->nmin);
+  Rprintf("Control terminal node size:                             nmin.control = %s \n", myPara->nmin_control ? "Yes" : "No");
   Rprintf("Minimum proportion of each child node:                 alpha = %1.2f%%\n", myPara->alpha*100);
   Rprintf("Sample with replacement:                         replacement = %s \n", myPara->replacement ? "Yes" : "No");
   Rprintf("Re-sampling proportion:                        resample.prob = %2.1f%% \n", myPara->resample_prob*100);

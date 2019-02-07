@@ -54,7 +54,7 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-  if (node_fail == 0 || node_n <= 2*nmin)
+  if (node_fail == 0 || node_n < 2*nmin)//Switched <=2*nmin to <2*nmin to match RSF
   {
     TERMINATE:;
 
@@ -68,8 +68,10 @@ void Surv_Split_A_Node(TREENODE* Node,
     double splitVal = 0;
     Surv_Find_A_Split(&splitVar, &splitVal, X, Y, Censor, Ncat, Interval, myPara, subjectweight, useObs, node_n, variableweight, variableindex, P, counter);
 
-    if (splitVar == -1) // didnt find anything
+    if (splitVar == -1){ // didnt find anything
+      //Rcout << "Didn't find a split.  Nodesize: "<<node_n<<std::endl;;
       goto TERMINATE;
+    }
     
 
     // calculate left and right child node

@@ -78,6 +78,7 @@ typedef struct PARAMETERS{
   int split_rule;
   int nsplit;
   int nmin;
+  int nmin_control;
   double alpha;
   int replacement;
   double resample_prob;

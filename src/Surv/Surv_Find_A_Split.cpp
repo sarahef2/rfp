@@ -49,6 +49,7 @@ void Surv_Find_A_Split(int* splitVar,
 
   int N = myPara->N;
   int nmin = myPara->nmin;
+  int nmin_control = myPara->nmin_control;
   int mtry = myPara->mtry;
   int use_sub_weight = myPara->use_sub_weight;
   int use_var_weight = myPara->use_var_weight;
@@ -110,7 +111,7 @@ void Surv_Find_A_Split(int* splitVar,
 
       }else{
         Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
-                            timepoints, split_gen, split_rule, nsplit, mincount);
+                            timepoints, split_gen, split_rule, nsplit, mincount, nmin_control);
       }
     }
     

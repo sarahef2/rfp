@@ -136,7 +136,8 @@ void Surv_One_Split_Cont(double* cut,
                         int &split_gen,
                         int &split_rule,
                         int &nsplit,
-                        int &mincount);
+                        int &mincount,
+                        int &nmin_control);
 
 void Surv_One_Split_Cont_W(double* cut,
                         double* score,

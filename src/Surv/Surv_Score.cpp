@@ -36,7 +36,6 @@ using namespace Rcpp;
 
 double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints)
 {
-  //auto t1 = std::chrono::system_clock::now();
   double numerator = 0;
   double denominator = 0;
   double tempscore = -1;
@@ -45,6 +44,9 @@ double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fa
   LeftN -= Left_Count_Censor[0];
   AllN -= Left_Count_Censor[0] - Right_Count_Censor[0];
   
+  //Rcout <<"Left_Count_Fail[1]: " <<Left_Count_Fail[1] <<std::endl;;
+  //Rcout <<"Right_Count_Fail[1]: " <<Right_Count_Fail[1] <<std::endl;;
+  
   for (int j = 1; j <= timepoints && AllN > 1; j++)
   {
     numerator += LeftN*(Left_Count_Fail[j] + Right_Count_Fail[j]) / AllN - Left_Count_Fail[j];
@@ -52,8 +54,10 @@ double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fa
 
     if (denominator > 0)
       tempscore = numerator*numerator / denominator;
-    else
-      break;
+    //else{
+    //  Rcout<<"LeftN "<<LeftN<<" Left_Count_Fail[j] "<<Left_Count_Fail[j]<<" Right_Count_Fail[j] "<<Right_Count_Fail[j]<<" AllN "<<AllN<<std::endl;;
+    //  break;
+    //}
 
     LeftN -= Left_Count_Fail[j] + Left_Count_Censor[j];
     AllN -= Left_Count_Fail[j] + Left_Count_Censor[j] + Right_Count_Fail[j] + Right_Count_Censor[j];
@@ -82,8 +86,8 @@ double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count
 
     if (denominator > 0)
       tempscore = dmax(numerator*numerator / denominator, tempscore);
-    else
-      break;
+    //else
+    //  break;
 
     LeftN -= Left_Count_Fail[j] + Left_Count_Censor[j];
     AllN -= Left_Count_Fail[j] + Left_Count_Censor[j] + Right_Count_Fail[j] + Right_Count_Censor[j];
@@ -112,8 +116,8 @@ double logrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fai
 
     if (denominator > WeightTH)
       tempscore = numerator*numerator / denominator;
-    else // due to precision loss, this might be 0 already, so just stop here
-      break;
+    //else // due to precision loss, this might be 0 already, so just stop here
+    //  break;
 
     LeftWeights -= Left_Count_Fail[j] + Left_Count_Censor[j];
     AllWeights -= Left_Count_Fail[j] + Left_Count_Censor[j] + Right_Count_Fail[j] + Right_Count_Censor[j];
@@ -141,8 +145,8 @@ double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_
 
     if (denominator > WeightTH)
       tempscore = dmax(numerator*numerator / denominator, tempscore);
-    else // due to precision loss, this might be 0 already, so just stop here
-      break;
+    //else // due to precision loss, this might be 0 already, so just stop here
+    //  break;
 
     LeftWeights -= Left_Count_Fail[j] + Left_Count_Censor[j];
     AllWeights -= Left_Count_Fail[j] + Left_Count_Censor[j] + Right_Count_Fail[j] + Right_Count_Censor[j];

@@ -42,8 +42,10 @@ void Surv_One_Split_Cont(double* cut,
                          int &split_gen,
                          int &split_rule,
                          int &nsplit,
-                         int &mincount)
+                         int &mincount,
+                         int &nmin_control)
 {
+  //Rcout << "Starting new split"<<std::endl;;
   ivec Left_Count_Fail(timepoints+1);
   Left_Count_Fail.fill(0);
   ivec Left_Count_Censor(timepoints+1);
@@ -116,10 +118,14 @@ void Surv_One_Split_Cont(double* cut,
   }
 
   qSort_dindex(xtemp, 0, node_n-1, index);
-
-  //auto t4b = std::chrono::system_clock::now();
-  int lowindex = mincount - 1;
-  int highindex = node_n - 1 - lowindex;
+  
+  int lowindex = 0;
+  int highindex = node_n - 1;
+  
+  if(nmin_control){
+    lowindex = mincount - 1;
+    highindex = node_n - 1 - lowindex;
+  }
 
   // check for ties
   while((xtemp[lowindex] == xtemp[lowindex+1]) & (lowindex < highindex)) lowindex ++;
@@ -129,7 +135,6 @@ void Surv_One_Split_Cont(double* cut,
   if (split_gen == 2) // rank split
   {
 
-    //R_DBP("run rank splitting rule");
     int temp_rank;
 
     for (k = 0; k < nsplit; k++)
@@ -184,7 +189,6 @@ void Surv_One_Split_Cont(double* cut,
 
     //R_DBP("run best splitting rule");
 
-    //auto t5c = std::chrono::system_clock::now();
     // place initial
     for (i = 0; i<=lowindex; i++)
     {
@@ -206,7 +210,6 @@ void Surv_One_Split_Cont(double* cut,
     // move up and calculate score
     for (i = lowindex; i <= highindex; i++)
     {
-      //auto t6c = std::chrono::system_clock::now();
       // if ties
       while (xtemp[i] == xtemp[i+1]){
         i++;
@@ -226,7 +229,8 @@ void Surv_One_Split_Cont(double* cut,
         temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
-
+      //Rcout << temp_score <<std::endl;;
+      
       if (temp_score > *score)
       {
         *score = temp_score;

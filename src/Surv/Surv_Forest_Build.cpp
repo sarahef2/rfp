@@ -88,7 +88,6 @@ void survForestBuild(const std::vector<  colvec > &X,
 #pragma omp parallel for schedule(static) num_threads(use_cores)
   for (nt = 0; nt < ntrees; nt++) // fit all trees
   {
-    //auto t2 = std::chrono::system_clock::now();
     //R_DBP("Start tree %i\n",nt);
     int i;
     // in-bag and out-of-bag data indicator
@@ -245,15 +244,15 @@ void survForestBuild(const std::vector<  colvec > &X,
           for(int d=0; d < N; d++){
             Dev_MSE_perm += resids_perm[d]*resids_perm[d];
           }
-          if(Dev_MSE_perm!=Dev_MSE_perm) Rcout << "Dev_MSE_perm is missing var "<< j<<std::endl;;
+          //if(Dev_MSE_perm!=Dev_MSE_perm) Rcout << "Dev_MSE_perm is missing var "<< j<<std::endl;;
           imp_sim[k] = Dev_MSE_perm;
-          if(imp_sim[k]!=imp_sim[k]) Rcout << "imp_sim[k] is missing var "<< j<<std::endl;;
+          //if(imp_sim[k]!=imp_sim[k]) Rcout << "imp_sim[k] is missing var "<< j<<std::endl;;
       }
         for(int m = 0; m < nsim; m++){
           VarImp[j] += imp_sim[m] / nsim;
-          if(VarImp[j]!=VarImp[j]) Rcout << "A) VarImp[j] is missing var "<< j<< " imp_sim[m] "<< imp_sim[m]<<" nsim "<< nsim<<std::endl;;
+          //if(VarImp[j]!=VarImp[j]) Rcout << "A) VarImp[j] is missing var "<< j<< " imp_sim[m] "<< imp_sim[m]<<" nsim "<< nsim<<std::endl;;
         }
-        if(VarImp[j]!=VarImp[j]) Rcout << "B) VarImp[j] is missing var "<< j<<std::endl;;
+        //if(VarImp[j]!=VarImp[j]) Rcout << "B) VarImp[j] is missing var "<< j<<std::endl;;
         
         VarImp[j] = VarImp[j] / Dev_MSE - 1;
     }
@@ -292,7 +291,7 @@ void dev_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb
     } 
     DResid[i] = ((MResid[i] > 0) - (MResid[i] < 0))*sqrt(-2*(MResid[i]+Censor[obs[i]]*log(Censor[obs[i]]-MResid[i]))); //Find the Deviance residual
     if(Censor[obs[i]]==0 and MResid[i]==0) DResid[i] = 0;
-    if(DResid[i]!=DResid[i]) Rcout << "Missing Residual: "<< MResid[i]<< " "<< Censor[obs[i]]<< " "<< Y[obs[i]]<<" "<<surv_matrix(i,Y[obs[i]])<<" " << MResid[i]+Censor[obs[i]]*log((Censor[obs[i]]-MResid[i])+.00000001) << std::endl;;
+    //if(DResid[i]!=DResid[i]) Rcout << "Missing Residual: "<< MResid[i]<< " "<< Censor[obs[i]]<< " "<< Y[obs[i]]<<" "<<surv_matrix(i,Y[obs[i]])<<" " << MResid[i]+Censor[obs[i]]*log((Censor[obs[i]]-MResid[i])+.00000001) << std::endl;;
   }
   
   double maxDR = -1000;
