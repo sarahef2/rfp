@@ -137,7 +137,8 @@ void Surv_One_Split_Cont(double* cut,
                         int &split_rule,
                         int &nsplit,
                         int &mincount,
-                        int &nmin_control);
+                        int &nmin_control,
+                        int &nmin_failure);
 
 void Surv_One_Split_Cont_W(double* cut,
                         double* score,
@@ -221,4 +222,22 @@ int get_terminal(int node, int &subj, const std::vector< vec > &X, const ivec &N
 void martin_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &MResids);
 
 void dev_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &DResid);
+
+void Variable_Importance(const std::vector<  colvec > &X,
+                         const ivec &Y,
+                         const ivec &Censor,
+                         const ivec &Ncat,
+                         const PARAMETERS* myPara,
+                         const vec &subjectweight,
+                         std::vector< mat > &tree_matrix,
+                         const ivec &subj_id,
+                         const int &N,
+                         const int &P,
+                         imat &ObsTrack,
+                         imat &ObsTerminal,
+                         std::vector< std::vector< ivec > > &NodeRegi,
+                         vec &VarImp,
+                         int &use_cores,
+                         mat &oob_surv_matrix,
+                         vec &oob_residuals);
 #endif

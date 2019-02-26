@@ -46,7 +46,13 @@ void Get_Kernel_Weights(int subj,
                           )
 {
   int node;
-  if(ObsTerminal(subj,nt) < 0 or (not InTrainSet) or perm_ind > -1){
+  bool check;
+  if(InTrainSet){
+    check = ObsTerminal(subj,nt) < 0 or perm_ind > -1 or (not InTrainSet);
+  }else{
+    check = perm_ind > -1 or (not InTrainSet);
+  }
+  if(check){
     node = get_terminal(0, subj, X, Ncat, tree_matrix_nt, perm_ind, perm_j, subj_perm_loc);// + 1;
     if(InTrainSet and perm_ind < 0){
       ObsTerminal(subj,nt) = node;

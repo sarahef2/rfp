@@ -62,7 +62,6 @@ void survForestBuild(const std::vector<  colvec > &X,
   int nimpute = myPara->nimpute;
   int size = (int) N*resample_prob;
   int nt;
-  int Nfail = myPara->Nfail; //Used in variable importance calculations
   std::vector< mat > tree_matrix(ntrees);
   mat VarImp_store(ntrees, P);
   VarImp_store.fill(0);
@@ -98,6 +97,7 @@ void survForestBuild(const std::vector<  colvec > &X,
     int OneSub;
     int oobag_n;
 
+    //R_DBP("Bootstrap Sample");
     for (i=0; i < N; i++)
       oobagObs[i] = subj_id[i];
 
@@ -147,6 +147,7 @@ void survForestBuild(const std::vector<  colvec > &X,
     ivec Ytemp(size);
     for (i = 0; i< size; i++) Ytemp[i] = Y[inbagObs[i]];
 
+    //R_DBP("Sort Y\n");
     qSort_iindex(Ytemp, 0, size-1, inbagObs);
 
     TREENODE *TreeRoot = new TREENODE;
@@ -155,14 +156,17 @@ void survForestBuild(const std::vector<  colvec > &X,
     ivec inbagObs_copy(size);
     for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
 
+    //R_DBP("Split %i\n",nt);
     // start to build the tree
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P, counter);
     
     // covert nodes to tree and NodeRegi.
     int Node = 0;
 
+    //R_DBP("Forest[nt]\n");
     Forest[nt] = TreeRoot;
     
+    //R_DBP("Record_NodeRegi\n");
     Record_NodeRegi(&Node, TreeRoot, NodeRegi, nt, ObsTerminal);//NodeRegi[nt]
 
     mat FittedTree;
@@ -173,155 +177,19 @@ void survForestBuild(const std::vector<  colvec > &X,
     FittedTree.set_size(TreeLength,4);
     
     //Convert tree structure nodes into matrix
+    //R_DBP("Record_Tree\n");
     Record_Tree(&Node, Forest[nt], FittedTree, TreeLength);
     tree_matrix[nt] = FittedTree;
     // summarize what observations are used in this tree
 
   }
 
-  if(importance){ //New version of importance
-    ivec tmp(N);
-    tmp.fill(0);
-    PredictSurvivalKernel((const std::vector< colvec >) X,
-                          Y,
-                          Censor,
-                          Ncat,
-                          subjectweight,
-                          (const std::vector< mat >) tree_matrix,
-                          (const imat) ObsTrack,
-                          ObsTerminal,
-                          (const std::vector< std::vector< ivec > >) NodeRegi,
-                          oob_surv_matrix,
-                          (const PARAMETERS*) myPara,
-                          N,
-                          (const ivec) subj_id,
-                          (const int) -1,
-                          (const ivec) tmp,
-                          1,
-                          true,
-                          use_cores);
-    dev_resid(Censor, Y, subj_id, N, oob_surv_matrix, oob_residuals);
-    double Dev_MSE = 0;
-    for(int d=0; d < N; d++){
-      Dev_MSE += oob_residuals[d]*oob_residuals[d];
-    }
-
-    //May want to make this variable?
-    int nsim = 1;
-
-    for(int j=0; j < P; j++){
-      vec imp_sim(nsim);
-      imp_sim.fill(0);
-      for(int k=0; k < nsim; k++){
-          ivec perm_j = subj_id;//oobagObs;
-          permute_i(perm_j, N);
-
-          mat surv_matrix_perm(N,Nfail+1);
-          surv_matrix_perm.fill(0);
-          
-          PredictSurvivalKernel((const std::vector< colvec >) X,
-                                Y,
-                                Censor,
-                                Ncat,
-                                subjectweight,
-                                (const std::vector< mat >) tree_matrix, //tree_matrix, //Figure out
-                                (const imat) ObsTrack,
-                                ObsTerminal,
-                                (const std::vector< std::vector< ivec > >) NodeRegi, //NodeRegi, //Figure out
-                                surv_matrix_perm,
-                                (const PARAMETERS*) myPara,
-                                N,
-                                (const ivec) subj_id,
-                                (const int) j,
-                                (const ivec) perm_j,
-                                1,
-                                true,
-                                use_cores);
-          vec resids_perm(N);
-          resids_perm.fill(0);
-          dev_resid(Censor, Y, subj_id, N, surv_matrix_perm, resids_perm);
-          double Dev_MSE_perm = 0;
-          for(int d=0; d < N; d++){
-            Dev_MSE_perm += resids_perm[d]*resids_perm[d];
-          }
-          //if(Dev_MSE_perm!=Dev_MSE_perm) Rcout << "Dev_MSE_perm is missing var "<< j<<std::endl;;
-          imp_sim[k] = Dev_MSE_perm;
-          //if(imp_sim[k]!=imp_sim[k]) Rcout << "imp_sim[k] is missing var "<< j<<std::endl;;
-      }
-        for(int m = 0; m < nsim; m++){
-          VarImp[j] += imp_sim[m] / nsim;
-          //if(VarImp[j]!=VarImp[j]) Rcout << "A) VarImp[j] is missing var "<< j<< " imp_sim[m] "<< imp_sim[m]<<" nsim "<< nsim<<std::endl;;
-        }
-        //if(VarImp[j]!=VarImp[j]) Rcout << "B) VarImp[j] is missing var "<< j<<std::endl;;
-        
-        VarImp[j] = VarImp[j] / Dev_MSE - 1;
-    }
-    
-    
+  if(importance){
+    Variable_Importance(X, Y, Censor, Ncat, myPara, subjectweight, tree_matrix, subj_id, N, P, ObsTrack, ObsTerminal, NodeRegi, VarImp, use_cores, oob_surv_matrix, oob_residuals);
   }
   
   return;
 }
-
-void martin_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &MResid){
-  
-
-  for(int i=0; i < Nb; i++){ //For each observation included
-    MResid[i] = Censor[obs[i]] - (-log(surv_matrix(i,Y[obs[i]]))); //Find the Martingale residual
-  }
-}
-
-void dev_resid(const ivec &Censor, const ivec &Y, const ivec &obs, const int &Nb, mat &surv_matrix, vec &DResid){
-  vec MResid(Nb);
-  MResid.fill(0);
-  martin_resid(Censor, Y, obs, Nb, surv_matrix, MResid);
-
-  double minMR = 1000;
-  for(int i=0; i < Nb; i++){ //For each observation included
-    if(MResid[i] < -100000000){
-      if(minMR == 1000){
-        for(int j=0; j < Nb; j++){
-          if(MResid[j] < minMR &&  MResid[j] > -100000000){
-            minMR = MResid[j];
-          }
-        }
-      }
-      //Rcout << "-infty res replace with " << minMR << std::endl;;
-      MResid[i] = minMR;
-    } 
-    DResid[i] = ((MResid[i] > 0) - (MResid[i] < 0))*sqrt(-2*(MResid[i]+Censor[obs[i]]*log(Censor[obs[i]]-MResid[i]))); //Find the Deviance residual
-    if(Censor[obs[i]]==0 and MResid[i]==0) DResid[i] = 0;
-    //if(DResid[i]!=DResid[i]) Rcout << "Missing Residual: "<< MResid[i]<< " "<< Censor[obs[i]]<< " "<< Y[obs[i]]<<" "<<surv_matrix(i,Y[obs[i]])<<" " << MResid[i]+Censor[obs[i]]*log((Censor[obs[i]]-MResid[i])+.00000001) << std::endl;;
-  }
-  
-  double maxDR = -1000;
-  double minDR = 1000;
-  for(int i=0; i < Nb; i++){
-    if(DResid[i] < -100000000 || DResid[i] != DResid[i]) {
-      if(minDR == 1000){
-        for(int j=0; j < Nb; j++){
-          if(DResid[j] < minDR &&  DResid[j] > -100000000){
-            minDR = DResid[j];
-          }
-        }
-      }
-      DResid[i] = minDR;
-    }
-    if(DResid[i] > 100000000) {
-      if(maxDR == -1000){
-        for(int j=0; j < Nb; j++){
-          if(DResid[j] > maxDR &&  DResid[j] < 100000000){
-            maxDR = DResid[j];
-          }
-        }
-      }
-      //Rcout << "+infty res replace with " << maxDR << std::endl;;
-      DResid[i] = maxDR;
-    }
-  }
-
-}
-
 
 void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< ivec > > &NodeRegi, int nt, imat &ObsTerminal)
 {

@@ -43,7 +43,8 @@ void Surv_One_Split_Cont(double* cut,
                          int &split_rule,
                          int &nsplit,
                          int &mincount,
-                         int &nmin_control)
+                         int &nmin_control,
+                         int &nmin_failure)
 {
   //Rcout << "Starting new split"<<std::endl;;
   ivec Left_Count_Fail(timepoints+1);
@@ -110,23 +111,48 @@ void Surv_One_Split_Cont(double* cut,
   // rank and best split need to copy x
   vec xtemp(node_n);
   ivec index(node_n);
+  ivec censortemp(node_n);
 
+  //R_DBP("Calculate sizes\n");
   for (i = 0; i < node_n; i++)
   {
     xtemp[i] = x[useObs[i]];
     index[i] = i;
   }
 
+  //R_DBP("Sort\n");
   qSort_dindex(xtemp, 0, node_n-1, index);
+  
+  for(i=0; i<node_n; i++){
+    censortemp[i] = Censor[index[i]];
+  }
   
   int lowindex = 0;
   int highindex = node_n - 1;
   
+  //R_DBP("Control size\n");
   if(nmin_control){
-    lowindex = mincount - 1;
-    highindex = node_n - 1 - lowindex;
+    if(nmin_failure){
+      int failcount = 0;
+      int fi = 0; //index of observations to count up to the required number of failures
+      if(sum(censortemp) < mincount){
+        return;//Stop running function- there are too few failures in this node already
+      }else{
+        failcount = failcount + censortemp[fi];
+        while(failcount < mincount){
+          fi++;
+          failcount = failcount + censortemp[fi];
+        }
+        lowindex = fi;
+        highindex = node_n - 1 - lowindex;
+      }
+    }else{
+      lowindex = mincount - 1;
+      highindex = node_n - 1 - lowindex; 
+    }
   }
 
+  //R_DBP("Ties\n");
   // check for ties
   while((xtemp[lowindex] == xtemp[lowindex+1]) & (lowindex < highindex)) lowindex ++;
   while((xtemp[highindex] == xtemp[highindex+1]) & (lowindex < highindex)) highindex --;
@@ -184,11 +210,13 @@ void Surv_One_Split_Cont(double* cut,
   }
 
 
+  //R_DBP("Best split\n");
   if (split_gen == 3) // best split
   {
 
     //R_DBP("run best splitting rule");
 
+    //R_DBP("Place initial\n");
     // place initial
     for (i = 0; i<=lowindex; i++)
     {
@@ -207,6 +235,7 @@ void Surv_One_Split_Cont(double* cut,
         Right_Count_Censor[Y[index[i]]]++;
     }
 
+    //R_DBP("Move up and calculate score\n");
     // move up and calculate score
     for (i = lowindex; i <= highindex; i++)
     {

@@ -10,6 +10,7 @@
 #' @param nsplit Number of random cutting points to compare for each variable at an internal node
 #' @param nmin Minimum number of observations required in an internal node to perform a split. Will split an internal node if it has 2*\code{nmin} observations. (CHECK)
 #' @param nmin.control Should the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.
+#' @param nmin.failure Should the amount of failures in the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.  If true, forces nmin.control=TRUE as well.
 #' @param alpha Minimum number of observations required for each child node as a portion of the parent node. Must be within \code{(0, 0.5]}.
 #' @param replacement Whether the in-bag samples are sampled with replacement
 #' @param resample.prob Proportion of in-bag samples
@@ -33,6 +34,7 @@ survForest <- function(x, y, censor,
         nsplit = 1,
         nmin = max(1, as.integer(log(nrow(x)))),
         nmin.control = FALSE,
+        nmin.failure = FALSE,
         alpha = 0,
         replacement = TRUE,
         resample.prob = 1,
@@ -52,6 +54,11 @@ survForest <- function(x, y, censor,
   if (!is.data.frame(x) & !is.matrix(x)) stop("x must be a matrix or dataframe")
   if (!is.vector(y)) stop("y must be a vector")
   if (!is.vector(censor)) stop("censor must be a vector")
+  
+  if(nmin.control==FALSE & nmin.failure==TRUE) {
+    warning("nmin.failure=TRUE forces nmin.control=TRUE.  Changing nmin.control=FALSE to nmin.control=TRUE.")
+    nmin.control=TRUE
+    }
 
   split.gen.mode = c("random", "rank", "best")
   match.arg(split.gen, split.gen.mode)
@@ -167,6 +174,7 @@ survForest <- function(x, y, censor,
                     "nsplit" = as.integer(nsplit),
                     "nmin" = as.integer(nmin),
                     "nmin.control" = as.integer(nmin.control),
+                    "nmin.failure" = as.integer(nmin.failure),
                     "alpha" = as.double(alpha),
                     "replacement" = as.integer(replacement),
                     "resample.prob" = as.double(resample.prob),

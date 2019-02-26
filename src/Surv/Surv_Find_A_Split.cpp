@@ -50,6 +50,7 @@ void Surv_Find_A_Split(int* splitVar,
   int N = myPara->N;
   int nmin = myPara->nmin;
   int nmin_control = myPara->nmin_control;
+  int nmin_failure = myPara->nmin_failure;
   int mtry = myPara->mtry;
   int use_sub_weight = myPara->use_sub_weight;
   int use_var_weight = myPara->use_var_weight;
@@ -79,13 +80,27 @@ void Surv_Find_A_Split(int* splitVar,
   // calculate node information
 
   int mtry_remaining = imax(1, imin(mtry, P));
-
+  
+  ivec var_used(P);
+  var_used.fill(0);
+  
   for (j = 0; j < mtry_remaining; j++)
   {
     temp_val = 0;
     temp_score = -1;
 
     temp_var = sample_rotate(variableindex, variableweight, j, P);
+    // if(j==0){
+    //   temp_var = random_in_range(0, P);
+    //   var_used[temp_var] = 1;
+    // }else{
+    //   temp_var = random_in_range(0, P);
+    //   while(var_used(temp_var)==1){
+    //     temp_var = random_in_range(0, P);
+    //   }
+    //   var_used[temp_var] = 1;
+    // }
+    //Rcout << temp_var << " " ;
 
     counter++;  
 
@@ -111,7 +126,7 @@ void Surv_Find_A_Split(int* splitVar,
 
       }else{
         Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
-                            timepoints, split_gen, split_rule, nsplit, mincount, nmin_control);
+                            timepoints, split_gen, split_rule, nsplit, mincount, nmin_control, nmin_failure);
       }
     }
     

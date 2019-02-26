@@ -81,14 +81,18 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
 
     for(nt = 0; nt < ntrees; nt++){
       bool Checkj;
+      bool check;
       int perm_ind_tmp = perm_ind;
       if(oob_only){
         CheckVar(tree_matrix[nt], perm_ind, Checkj);
         if(not Checkj){
           perm_ind_tmp = -1;
         }
+        check = ObsTrack(use_obs[i],nt) < 1 or !oob_only;
+      }else{
+        check = !oob_only;
       }
-      if(ObsTrack(use_obs[i],nt) < 1 or !oob_only){ //If the observation is not used to build the tree OR if we want to use all obs, not just oob obs (so oob_only=FALSE)
+      if(check){ //If the observation is not used to build the tree OR if we want to use all obs, not just oob obs (so oob_only=FALSE)
         if(use_sub_weight){
           Get_Kernel_Weights_w(use_obs[i], X, Ncat, tree_matrix[nt], ObsTerminal,
                                NodeRegi[nt], subjectweight, weights, N, InTrainSet,  perm_ind_tmp, perm_j, i, nt);

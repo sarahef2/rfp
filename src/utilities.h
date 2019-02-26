@@ -21,7 +21,6 @@
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
 # include <stdbool.h>
 //# include <Rdefines.h>
 //# include <R.h>
@@ -79,6 +78,7 @@ typedef struct PARAMETERS{
   int nsplit;
   int nmin;
   int nmin_control;
+  int nmin_failure;
   double alpha;
   int replacement;
   double resample_prob;

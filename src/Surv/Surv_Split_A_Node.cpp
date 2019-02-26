@@ -45,6 +45,7 @@ void Surv_Split_A_Node(TREENODE* Node,
 {
 
   int nmin = myPara->nmin;
+  int nmin_failure = myPara->nmin_failure;
   int i;
 
   // calculate node information
@@ -54,7 +55,7 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-  if (node_fail == 0 || node_n < 2*nmin)//Switched <=2*nmin to <2*nmin to match RSF
+  if (node_fail == 0 || node_n < 2*nmin || (node_fail < nmin & nmin_failure))//Switched <=2*nmin to <2*nmin to match RSF
   {
     TERMINATE:;
 

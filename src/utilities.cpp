@@ -20,6 +20,7 @@
 //  **********************************************************************
 
 # include <RcppArmadillo.h>
+# include <random>
 // [[Rcpp::depends(RcppArmadillo)]]
 //# include <Rcpp.h>
 //# include <Rdefines.h>
@@ -30,6 +31,7 @@ using namespace arma;
 
 // my header file
 # include "utilities.h"
+std::mt19937 generator;    // random-number engine used (Mersenne-Twister in this case)
 
 
 // debug
@@ -73,6 +75,7 @@ void copyParameters(PARAMETERS* myPara, SEXP list)
   myPara->nsplit= INTEGER(getListElement(list, "nsplit"))[0];
   myPara->nmin = INTEGER(getListElement(list, "nmin"))[0];
   myPara->nmin_control = INTEGER(getListElement(list, "nmin.control"))[0];
+  myPara->nmin_failure = INTEGER(getListElement(list, "nmin.failure"))[0];
   myPara->alpha = REAL(getListElement(list, "alpha"))[0];
   myPara->replacement = INTEGER(getListElement(list, "replacement"))[0];
   myPara->resample_prob = REAL(getListElement(list, "resample.prob"))[0];
@@ -102,6 +105,7 @@ void printParameters(PARAMETERS* myPara)
     Rprintf("Number of random splits:                              nsplit = %i \n", myPara->nsplit);
   Rprintf("Minimum terminal node size:                             nmin = %i \n", myPara->nmin);
   Rprintf("Control terminal node size:                             nmin.control = %s \n", myPara->nmin_control ? "Yes" : "No");
+  Rprintf("Control terminal node failure count:                             nmin.failure = %s \n", myPara->nmin_failure ? "Yes" : "No");
   Rprintf("Minimum proportion of each child node:                 alpha = %1.2f%%\n", myPara->alpha*100);
   Rprintf("Sample with replacement:                         replacement = %s \n", myPara->replacement ? "Yes" : "No");
   Rprintf("Re-sampling proportion:                        resample.prob = %2.1f%% \n", myPara->resample_prob*100);
@@ -167,6 +171,15 @@ int random_in_range(int min, int max)
 
   double u;
   do {u = R::runif((double) min, (double) max);} while (u <= min || u >= max);
+  
+  // Solution from https://stackoverflow.com/questions/5008804/generating-random-integer-from-a-range
+  
+  //std::default_random_engine generator;
+  //std::uniform_int_distribution<int> uni(min, max-1); // guaranteed unbiased
+  
+  //int u = uni(generator);
+  
+  //Rcout << "uniform_int_distribution ("<< min << ","<<max<<"): " << u << std::endl;
   return (int) u; // generates integers from min to max-1
 }
 
