@@ -148,6 +148,10 @@ survForest <- function(x, y, censor,
   # variable weights for mtry
   use.var.weight = !is.null(variable.weight)
   if (is.null(variable.weight)) variable.weight = rep(1/p, p) else {variable.weight = variable.weight/sum(variable.weight)}
+  if(any(variable.weight<0)) {
+    warning("Variable weights must be greater than 0.  Setting all variable weights less than 0 as 0.")
+    variable.weight = ifelse(variable.weight < 0, 0, variable.weight)
+  }
   if (length(variable.weight) != p) {warning("Variable weights length must by p, reset to equal weights"); subject.weight = rep(1/p, p); use.var.weight = FALSE}
   if (any(variable.weight<0)) {warning("Variable weights cannot be negative, reset to equal weights"); subject.weight = rep(1/p, p); use.var.weight = FALSE}
   storage.mode(variable.weight) <- "double"
