@@ -184,11 +184,13 @@ void Surv_One_Split_Cat(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
-        else
+        else if (split_rule == 2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
+        else 
+          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
       }
       
-      if (temp_score > *score)
+      if (temp_score > *score and split_rule<3)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
@@ -196,6 +198,15 @@ void Surv_One_Split_Cat(double* cut,
           
           *score = temp_score;
           *cut = pack(ncat, goright);
+      }
+      if (temp_score < *score and split_rule==3)
+      {
+        for (i = 0; i< ncat; i ++)
+          if (tempRight[i] == 1)
+            goright[Cat_Count[i].cat] = 1;
+        
+        *score = temp_score;
+        *cut = pack(ncat, goright);
       }
     }
   }
@@ -248,11 +259,14 @@ void Surv_One_Split_Cat(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
-        else
+        else if(split_rule == 2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
+        else 
+          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+          
       }
       
-      if (temp_score > *score)
+      if (temp_score > *score and split_rule<3)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
@@ -261,6 +275,16 @@ void Surv_One_Split_Cat(double* cut,
           *score = temp_score;
           *cut = pack(ncat, goright);
       }
+      if (temp_score < *score and split_rule==3)
+      {
+        for (i = 0; i< ncat; i ++)
+          if (tempRight[i] == 1)
+            goright[Cat_Count[i].cat] = 1;
+        
+        *score = temp_score;
+        *cut = pack(ncat, goright);
+      }
+      
     }
   }
 
@@ -425,16 +449,27 @@ void Surv_One_Split_Cat_W(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
-        else
+        else if(split_rule == 2)
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
+        else 
+          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
       }
 
-      if (temp_score > *score)
+      if (temp_score > *score and split_rule<3)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
 
+          *score = temp_score;
+          *cut = pack(ncat, goright);
+      }
+      if (temp_score < *score and split_rule==3)
+      {
+        for (i = 0; i< ncat; i ++)
+          if (tempRight[i] == 1)
+            goright[Cat_Count[i].cat] = 1;
+          
           *score = temp_score;
           *cut = pack(ncat, goright);
       }
@@ -491,16 +526,27 @@ void Surv_One_Split_Cat_W(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
-        else
+        else if(split_rule == 2)
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
+        else 
+          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
       }
 
-      if (temp_score > *score)
+      if (temp_score > *score  and split_rule<3)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
 
+          *score = temp_score;
+          *cut = pack(ncat, goright);
+      }
+      if (temp_score < *score and split_rule==3)
+      {
+        for (i = 0; i< ncat; i ++)
+          if (tempRight[i] == 1)
+            goright[Cat_Count[i].cat] = 1;
+          
           *score = temp_score;
           *cut = pack(ncat, goright);
       }

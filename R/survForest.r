@@ -63,7 +63,7 @@ survForest <- function(x, y, censor,
   split.gen.mode = c("random", "rank", "best")
   match.arg(split.gen, split.gen.mode)
 
-  split.rule.mode = c("logrank", "suplogrank")
+  split.rule.mode = c("logrank", "suplogrank", "loglik")
   match.arg(split.rule, split.rule.mode)
 
   xnames <- colnames(x)
@@ -153,7 +153,7 @@ survForest <- function(x, y, censor,
     variable.weight = ifelse(variable.weight < 0, 0, variable.weight)
   }
   if (length(variable.weight) != p) {warning("Variable weights length must by p, reset to equal weights"); subject.weight = rep(1/p, p); use.var.weight = FALSE}
-  if (any(variable.weight<0)) {warning("Variable weights cannot be negative, reset to equal weights"); subject.weight = rep(1/p, p); use.var.weight = FALSE}
+  #if (any(variable.weight<0)) {warning("Variable weights cannot be negative, reset to equal weights"); subject.weight = rep(1/p, p); use.var.weight = FALSE}
   storage.mode(variable.weight) <- "double"
 
   if (use.var.weight && split.gen.mode == "best")

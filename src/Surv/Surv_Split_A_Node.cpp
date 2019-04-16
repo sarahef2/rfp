@@ -55,7 +55,7 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-  if (node_fail == 0 || node_n < 2*nmin || (node_fail < nmin & nmin_failure))//Switched <=2*nmin to <2*nmin to match RSF
+  if (node_fail == 0 || node_n < 2*nmin || ((node_fail < nmin) & nmin_failure))//Switched <=2*nmin to <2*nmin to match RSF
   {
     TERMINATE:;
 
@@ -122,10 +122,15 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     if (LeftSize == 0 || RightSize == 0)
     {
-      R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
+      R_DBP("Did not produce a proper split (%i) at node %i, for variable %i, need to check node \n", splitVal, Node, splitVar);
+      Rcout << "splitVal: " << splitVal << std::endl;;
+      Rcout << "LeftSize: " << LeftSize << std::endl;;
+      Rcout << "RightSize: " << RightSize << std::endl;;
+      Rcout << "useObs: " << useObs << std::endl;;
       goto TERMINATE;
     }
 
+    //Rcout << "Good split " << std::endl;;
     // initiate left and right node
 
     Node->Var = splitVar;			// Splitting variable

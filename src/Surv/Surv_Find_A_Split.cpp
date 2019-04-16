@@ -121,26 +121,32 @@ void Surv_Find_A_Split(int* splitVar,
 
       if (use_sub_weight)
       {
-        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight,
+        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], variableweight[temp_var], Y_collapse, Censor_collapse, subjectweight,
                               timepoints, split_gen, split_rule, nsplit, nmin, alpha);
 
       }else{
-        Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse,
+        Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], variableweight[temp_var], Y_collapse, Censor_collapse,
                             timepoints, split_gen, split_rule, nsplit, mincount, nmin_control, nmin_failure);
       }
     }
     
-    if (use_var_weight)
+    if (use_var_weight and split_rule<3)
       temp_score = temp_score*variableweight[j];
 
     // update the score
-    if (temp_score > 0 && temp_score > best_score)
+    if (temp_score > 0 && temp_score > best_score and split_rule<3)
     {
       best_score = temp_score;
       *splitVar = temp_var;
       *splitVal = temp_val;
     }
-  }
+    if (temp_score > 0 && ((temp_score < best_score) or (best_score<0)) and split_rule==3)
+    {
+      best_score = temp_score;
+      *splitVar = temp_var;
+      *splitVal = temp_val;
+    }
+    }
 
   return;
 }

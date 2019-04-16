@@ -130,6 +130,7 @@ void Surv_One_Split_Cont(double* cut,
                         const ivec &useObs,
                         int node_n,
                         const colvec &x,
+                        double &varw,
                         const ivec &Y,
                         const ivec &Censor,
                         int &timepoints,
@@ -145,6 +146,7 @@ void Surv_One_Split_Cont_W(double* cut,
                         const ivec &useObs,
                         int node_n,
                         const vec &x,
+                        double &varw,
                         const ivec &Y,
                         const ivec &Censor,
                         const vec &subjectweight,
@@ -161,6 +163,8 @@ double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count
 double logrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 
+double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, int timepoints, double w);
+double loglik_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, int timepoints, double w);
 
 // prediction functions
 
