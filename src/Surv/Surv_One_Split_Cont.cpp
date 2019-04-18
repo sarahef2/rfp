@@ -327,7 +327,7 @@ void Surv_One_Split_Cont_W(double* cut,
                            double* score,
                            const ivec &useObs,
                            int node_n,
-                           const vec &x,
+                           const colvec &x,
                            double &varw, //weight for this variable
                            const ivec &Y, // y should be called by index i
                            const ivec &Censor, // censor should be called by index i
@@ -337,7 +337,9 @@ void Surv_One_Split_Cont_W(double* cut,
                            int &split_rule,
                            int &nsplit,
                            int &nmin,
-                           int &alpha)
+                           int &alpha,
+                           int &nmin_control,
+                           int &nmin_failure)
 {
 
   vec Left_Count_Fail(timepoints+1);
@@ -423,13 +425,17 @@ void Surv_One_Split_Cont_W(double* cut,
 
   vec xtemp(node_n);
   ivec index(node_n);
-
+  ivec censortemp(node_n);
+  
   for (i = 0; i < node_n; i++)
   {
     xtemp[i] = x[useObs[i]];
     index[i] = i;
   }
 
+  for(i=0; i<node_n; i++){
+    censortemp[i] = Censor[index[i]];
+  }
   qSort_dindex(xtemp, 0, node_n-1, index);
 
   int lowindex = 1;
@@ -440,11 +446,11 @@ void Surv_One_Split_Cont_W(double* cut,
     if(nmin_failure){
       int failcount = 0;
       int fi = 0; //index of observations to count up to the required number of failures
-      if(sum(censortemp) < mincount){
+      if(sum(censortemp) < nmin){
         return;//Stop running function- there are too few failures in this node already
       }else{
         failcount = failcount + censortemp[fi];
-        while(failcount < mincount){
+        while(failcount < nmin){
           fi++;
           failcount = failcount + censortemp[fi];
         }

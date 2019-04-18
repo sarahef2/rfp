@@ -59,7 +59,7 @@ void survForestBuild(const std::vector<  colvec > &X,
   int replacement = myPara->replacement;
   int importance = myPara->importance;
   double resample_prob = myPara->resample_prob;
-  int nimpute = myPara->nimpute;
+  //int nimpute = myPara->nimpute;
   int size = (int) N*resample_prob;
   int nt;
   std::vector< mat > tree_matrix(ntrees);
@@ -95,7 +95,7 @@ void survForestBuild(const std::vector<  colvec > &X,
     oobagObs.fill(0);
     
     int OneSub;
-    int oobag_n;
+    //int oobag_n;
 
     //R_DBP("Bootstrap Sample");
     for (i=0; i < N; i++)
@@ -112,7 +112,7 @@ void survForestBuild(const std::vector<  colvec > &X,
         oobagObs[OneSub] = -1;
       }
 
-      oobag_n = N;
+      //oobag_n = N;
       
       i=0;
       while(i<oobagObs.size())
@@ -134,7 +134,7 @@ void survForestBuild(const std::vector<  colvec > &X,
           oobagObs.shed_row(i);
         else
           i++;
-      oobag_n = N - size;
+      //oobag_n = N - size;
     }
     
     // record the observations

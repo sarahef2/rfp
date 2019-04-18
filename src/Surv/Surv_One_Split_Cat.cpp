@@ -37,7 +37,8 @@ void Surv_One_Split_Cat(double* cut,
                         double* score,
                         const ivec useObs,
                         int node_n,
-                        const vec x,
+                        const colvec x,
+                        double &varw, //The weight for this variable
                         const ivec Y, // y should be called by index i
                         const ivec Censor, // censor should be called by index i
                         int ncat,
@@ -300,6 +301,7 @@ void Surv_One_Split_Cat_W(double* cut,
                           const ivec useObs,
                           int node_n,
                           const colvec x,
+                          double &varw, //The weight for this variable
                           const ivec Y, // y should be called by index i
                           const ivec Censor, // censor should be called by index i
                           const vec subjectweight,

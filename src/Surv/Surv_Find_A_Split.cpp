@@ -47,7 +47,7 @@ void Surv_Find_A_Split(int* splitVar,
                        int &counter)
 {
 
-  int N = myPara->N;
+  //int N = myPara->N;
   int nmin = myPara->nmin;
   int nmin_control = myPara->nmin_control;
   int nmin_failure = myPara->nmin_failure;
@@ -102,17 +102,21 @@ void Surv_Find_A_Split(int* splitVar,
     // }
     //Rcout << temp_var << " " ;
 
-    counter++;  
+    counter++; 
+    
+    double temp_vw;
+    if(use_var_weight) temp_vw=variableweight[temp_var]; 
+      else temp_vw=1.0; //If no variable weighting, then set variable weight to 1.  Otherwise weight=1/P, which skews loglikelihood weighting
 
     if (Ncat[temp_var] > 1)
     {
       if (use_sub_weight)
       {
-        Surv_One_Split_Cat_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, subjectweight, Ncat[temp_var],
+        Surv_One_Split_Cat_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], temp_vw, Y_collapse, Censor_collapse, subjectweight, Ncat[temp_var],
                              timepoints, split_gen, split_rule, nsplit, nmin, alpha);
       }else{
 
-        Surv_One_Split_Cat(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], Y_collapse, Censor_collapse, Ncat[temp_var],
+        Surv_One_Split_Cat(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], temp_vw, Y_collapse, Censor_collapse, Ncat[temp_var],
                            timepoints, split_gen, split_rule, nsplit, mincount);
         
       }
@@ -121,11 +125,11 @@ void Surv_Find_A_Split(int* splitVar,
 
       if (use_sub_weight)
       {
-        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], variableweight[temp_var], Y_collapse, Censor_collapse, subjectweight,
-                              timepoints, split_gen, split_rule, nsplit, nmin, alpha);
+        Surv_One_Split_Cont_W(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], temp_vw, Y_collapse, Censor_collapse, subjectweight,
+                              timepoints, split_gen, split_rule, nsplit, nmin, alpha, nmin_control, nmin_failure);
 
       }else{
-        Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], variableweight[temp_var], Y_collapse, Censor_collapse,
+        Surv_One_Split_Cont(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], temp_vw, Y_collapse, Censor_collapse,
                             timepoints, split_gen, split_rule, nsplit, mincount, nmin_control, nmin_failure);
       }
     }

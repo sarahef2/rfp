@@ -40,17 +40,20 @@ vec haz(ivec Count_Fail, ivec Count_Censor, int timepoints){
   vec haz(timepoints);
   haz.fill(0);
   
+  //Rcout <<"Count_Fail: "<< Count_Fail<<std::endl;;
   for(int k = 0; k <= timepoints; k++){
     for(int j=0; j <= k; j++){
       risk_set[j] += Count_Fail[k];
       risk_set[j] += Count_Censor[k];
     }
   }
-  
+
   for(int k = 1; k <= timepoints; k++){
     if(risk_set[k]==0) risk_set[k] = 1;
-    haz[k-1] = 1.0/risk_set[k];
+    haz[k-1] = ((double) Count_Fail[k])/risk_set[k];
   }
+  
+  //Rcout <<"hazard: "<< haz<<std::endl;;
   
   return haz;
 }
@@ -61,7 +64,7 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
   ivec Count_Censor(timepoints+1);
   Count_Censor.fill(0);
   
-  for(int i = 0; i < timepoints; i++){
+  for(int i = 0; i <= timepoints; i++){
     Count_Fail[i] = Left_Count_Fail[i] + Right_Count_Fail[i];
     Count_Censor[i] = Left_Count_Censor[i] + Right_Count_Censor[i];
   }
@@ -83,16 +86,19 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
   double loglik = 0;
   double temp = 0;
   
-  for(int j = 0; j < timepoints; j++){
+  for(int j = 1; j <= timepoints; j++){
     temp = 0;
-    for(int k = j; k<timepoints; k++){
-      temp += lambdaL[k]*(Left_Count_Fail[k]+Left_Count_Censor[k]) +
-        lambdaR[k]*(Right_Count_Fail[k]+Right_Count_Censor[k]);
+    for(int k = j; k<=timepoints; k++){
+      temp += lambdaL[k-1]*(Left_Count_Fail[k]+Left_Count_Censor[k]) +
+        lambdaR[k-1]*(Right_Count_Fail[k]+Right_Count_Censor[k]);
     }
     if(temp>0) loglik -= (Count_Censor[j]+Count_Fail[j])*log(temp);
-    if(lambdaL[j]>0) loglik += Left_Count_Fail[j]*log(lambdaL[j]);
-    if(lambdaR[j]>0) loglik += Right_Count_Fail[j]*log(lambdaR[j]);
+    if(lambdaL[j-1]>0) loglik += Left_Count_Fail[j]*log(lambdaL[j-1]);
+    if(lambdaR[j-1]>0) loglik += Right_Count_Fail[j]*log(lambdaR[j-1]);
   }
+  //Rcout <<"Left_Count_Fail[1]: "<< Left_Count_Fail[1]<< " Lhaz[1]: "<<lambdaL[1]<<std::endl;;
+  //Rcout <<"Right_Count_Fail[1]: "<< Right_Count_Fail[1]<< " Rhaz[1]: "<<lambdaR[1]<<std::endl;;
+  //Rcout <<"loglik: "<< -loglik<<std::endl;;
 
   return -loglik;
 }

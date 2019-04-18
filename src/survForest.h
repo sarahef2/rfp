@@ -100,6 +100,7 @@ void Surv_One_Split_Cat_W(double* cut,
                            const ivec useObs,
                            int node_n,
                            const colvec x,
+                           double &varw,
                            const ivec Y,
                            const ivec Censor,
                            const vec subjectweight,
@@ -115,7 +116,8 @@ void Surv_One_Split_Cat(double* cut,
                         double* score,
                         const ivec useObs,
                         int node_n,
-                        const vec x,
+                        const colvec x,
+                        double &varw,
                         const ivec Y,
                         const ivec Censor,
                         int ncat,
@@ -155,7 +157,9 @@ void Surv_One_Split_Cont_W(double* cut,
                         int &split_rule,
                         int &nsplit,
                         int &nmin,
-                        int &alpha);
+                        int &alpha,
+                        int &nmin_control,
+                        int &nmin_failure);
 
 double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
