@@ -1,34 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
-//# include <Rdefines.h>
-//# include <R.h>
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void Get_Kernel_Weights(int subj,
                         const std::vector< colvec > &X,
@@ -88,7 +71,7 @@ void Get_Kernel_Weights_w(int subj,
 
   int node;
   if(ObsTerminal(subj,nt) < 0 or (not InTrainSet) or perm_ind > -1){
-    node = get_terminal(0, subj, X, Ncat, tree_matrix_nt, perm_ind, perm_j, subj_perm_loc);// + 1; 
+    node = get_terminal(0, subj, X, Ncat, tree_matrix_nt, perm_ind, perm_j, subj_perm_loc);// + 1;
     if(InTrainSet and perm_ind < 0){
       ObsTerminal(subj,nt) = node;
     }
@@ -114,9 +97,9 @@ int get_terminal(int node, int &subj, const std::vector< colvec > &X, const ivec
     return node;
 
   int splitvar = (int) tree_matrix_nt(node,0) - 1;
-  
+
   double subj_val;
-  
+
   if(splitvar == perm_ind){
     subj_val = X[splitvar][perm_j[subj_perm_loc]];
   }else{

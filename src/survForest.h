@@ -1,31 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-# include <R.h>
+# include <Rcpp.h>
+
 using namespace Rcpp;
+using namespace arma;
 
-# include "utilities.h"
-
+// my header file
+# include "Utility//utility.h"
 
 #ifndef survForest_Fun
 #define survForest_Fun
@@ -116,7 +102,7 @@ void Surv_One_Split_Cat(double* cut,
                         double* score,
                         const ivec useObs,
                         int node_n,
-                        const colvec x,
+                        const vec x,
                         double &varw,
                         const ivec Y,
                         const ivec Censor,
@@ -139,7 +125,7 @@ void Surv_One_Split_Cont(double* cut,
                         int &split_gen,
                         int &split_rule,
                         int &nsplit,
-                        int &mincount,
+                        int &nmin,
                         int &nmin_control,
                         int &nmin_failure);
 
@@ -161,14 +147,16 @@ void Surv_One_Split_Cont_W(double* cut,
                         int &nmin_control,
                         int &nmin_failure);
 
+vec haz(ivec Count_Fail, ivec Count_Censor, double N, int timepoints);
+double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints, double w, vec &lambda0);
 double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 double suplogrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 
+vec haz_w(vec Count_Fail, vec Count_Censor, double Nw, int timepoints);
+double loglik_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints, double w, vec &lambda0);
 double logrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 double suplogrank_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, double LeftN, double AllN, int timepoints);
 
-double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, int timepoints, double w);
-double loglik_w(vec Left_Count_Fail, vec Left_Count_Censor, vec Right_Count_Fail, vec Right_Count_Censor, int timepoints, double w);
 
 // prediction functions
 

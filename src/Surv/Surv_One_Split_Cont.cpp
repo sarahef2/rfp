@@ -1,35 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
-//# include <Rdefines.h>
-//# include <R.h>
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
+
 using namespace Rcpp;
-# include <Rmath.h>
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void Surv_One_Split_Cont(double* cut,
                          double* score,
@@ -43,7 +25,7 @@ void Surv_One_Split_Cont(double* cut,
                          int &split_gen,
                          int &split_rule,
                          int &nsplit,
-                         int &mincount,
+                         int &nmin,
                          int &nmin_control,
                          int &nmin_failure)
 {
@@ -61,11 +43,30 @@ void Surv_One_Split_Cont(double* cut,
 
   double temp_score;
   double temp_cut;
-
+  vec lambda0(timepoints);
+  lambda0.fill(0);
+  
+  if(split_rule==3){//Finding the base hazard once
+    if(varw < 1){
+      ivec Count_Fail(timepoints+1);
+      Count_Fail.fill(0);
+      ivec Count_Censor(timepoints+1);
+      Count_Censor.fill(0);
+      
+      for(i=0; i<node_n; i++){
+        if (Censor[i] == 1)
+          Count_Fail[Y[i]]++;
+        else
+          Count_Censor[Y[i]]++;
+      }
+      lambda0 = haz(Count_Fail, Count_Censor, node_n, timepoints);
+    }
+  }
+  
   if (split_gen == 1) // random split
   {
     //R_DBP("run random splitting rule");
-    
+
     for (k = 0; k < nsplit; k++)
     {
       temp_cut = x[useObs[random_in_range(0, node_n)]];
@@ -98,15 +99,10 @@ void Surv_One_Split_Cont(double* cut,
         else if (split_rule==2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
         else
-          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, varw, lambda0);
       }
 
-      if (temp_score > *score and split_rule < 3)
-      {
-        *score = temp_score;
-        *cut = temp_cut;
-      }
-      if (temp_score < *score and split_rule == 3)
+      if (temp_score > *score)
       {
         *score = temp_score;
         *cut = temp_cut;
@@ -129,34 +125,43 @@ void Surv_One_Split_Cont(double* cut,
   }
 
   //R_DBP("Sort\n");
-  qSort_dindex(xtemp, 0, node_n-1, index);
-  
+  std::sort(index.begin(), index.end(), [&xtemp](size_t i, size_t j) {return (xtemp[i] < xtemp[j]);});
+
   for(i=0; i<node_n; i++){
+    xtemp[i] = x[useObs[index[i]]];
     censortemp[i] = Censor[index[i]];
   }
-  
-  int lowindex = 1;
-  int highindex = node_n - 2;
-  
+
+  //Rcout << "xtemp = " << xtemp << std::endl;
+
+  int lowindex = 0;
+  int highindex = node_n - 1;
+
   //R_DBP("Control size\n");
   if(nmin_control){
     if(nmin_failure){
       int failcount = 0;
       int fi = 0; //index of observations to count up to the required number of failures
-      if(sum(censortemp) < mincount){
+      if(sum(censortemp) < nmin){
         return;//Stop running function- there are too few failures in this node already
       }else{
         failcount = failcount + censortemp[fi];
-        while(failcount < mincount){
+        while(failcount < nmin){
           fi++;
           failcount = failcount + censortemp[fi];
         }
         lowindex = fi;
-        highindex = node_n - 1 - lowindex;
+        fi = node_n - 1;
+        failcount = censortemp[fi];
+        while(failcount < nmin){
+          fi--;
+          failcount += censortemp[fi];
+        }
+        highindex = fi;
       }
     }else{
-      lowindex = mincount - 1;
-      highindex = node_n - 1 - lowindex; 
+      lowindex = nmin - 1;
+      highindex = node_n - 1 - lowindex;
     }
   }
 
@@ -209,21 +214,18 @@ void Surv_One_Split_Cont(double* cut,
       else if(split_rule == 2)
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, temp_rank+1, node_n, timepoints);
       else
-        temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
-
-      if (temp_score > *score and split_rule < 3)
-      {
-        *score = temp_score;
-        *cut = (xtemp[temp_rank] + xtemp[temp_rank+1])/2;
-      }
+        temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, temp_rank+1, node_n, timepoints, varw, lambda0);
       
-      if (temp_score < *score and split_rule == 3)
+      if (temp_score > *score)
       {
         *score = temp_score;
         *cut = (xtemp[temp_rank] + xtemp[temp_rank+1])/2;
       }
+
     }
   }
+
+  //Rcout << "low index is " << lowindex << "; high index is " << highindex << " split rule is " << split_rule << std::endl;
 
 
   //R_DBP("Best split\n");
@@ -256,7 +258,7 @@ void Surv_One_Split_Cont(double* cut,
     for (i = lowindex; i <= highindex; i++)
     {
       // if ties
-      while ((xtemp[i] == xtemp[i+1]) & ((i+1)<highindex)){
+      while (xtemp[i] == xtemp[i+1]){
         i++;
 
         if (Censor[index[i]] == 1)
@@ -270,39 +272,22 @@ void Surv_One_Split_Cont(double* cut,
       }
 
       // get score
-      
-      //Rcout << "split: " << xtemp[i] << std::endl;;
       if (split_rule == 1)
         temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
-      else if (split_rule == 2)
+      else if(split_rule == 2)
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
-        temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+        temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, varw, lambda0);
       //Rcout << temp_score <<std::endl;;
-      
-      if (temp_score > *score and split_rule < 3)
+
+      if (temp_score > *score)
       {
         *score = temp_score;
-        *cut = (xtemp[i] + xtemp[i+1])/2;;
+        *cut = (xtemp[i] + xtemp[i+1])/2;
       }
-      if ((temp_score < *score or *score<0) and split_rule == 3)
-      {
-        //Rcout << "xtemp: " << xtemp << std::endl;;
-        //Rcout << "i: " << i << " node_n: "<<node_n<< std::endl;;
-        *score = temp_score;
-        //if((((xtemp[i] + xtemp[i+1])/2)>xtemp[node_n])) {
-        //  *cut = (xtemp[i] + xtemp[i-1])/2;
-        //  }else {
-            *cut = (xtemp[i] + xtemp[i+1])/2;
-        //    }
-        //if(xtemp[i+1]==0 and xtemp[i]>0) cut=xtemp[i];
-        //  else *cut = (xtemp[i] + xtemp[i+1])/2;
-        //if(xtemp[i]==xtemp[1]) 
-        //Rcout << "cut: " << *cut << std::endl;;
-      }
-      
-      //Rcout << "temp_score: " << temp_score << std::endl;;
-      
+
+      //Rcout << "cut is " << (xtemp[i] + xtemp[i+1])/2 << "; temp score is " << temp_score << "; temp cut is " << *cut << std::endl;
+
       // get next ready
 
       if(i+1 <= highindex){
@@ -317,6 +302,9 @@ void Surv_One_Split_Cont(double* cut,
       }
     }
   }
+
+  //Rcout << " \n" << std::endl;
+
   return;
 }
 
@@ -327,8 +315,8 @@ void Surv_One_Split_Cont_W(double* cut,
                            double* score,
                            const ivec &useObs,
                            int node_n,
-                           const colvec &x,
-                           double &varw, //weight for this variable
+                           const vec &x,
+                           double &varw, //The weight for this variable
                            const ivec &Y, // y should be called by index i
                            const ivec &Censor, // censor should be called by index i
                            const vec &subjectweight, // subjectweight should be called by index useObs[i]
@@ -350,7 +338,7 @@ void Surv_One_Split_Cont_W(double* cut,
   Right_Count_Fail.fill(0);
   vec Right_Count_Censor(timepoints+1);
   Right_Count_Censor.fill(0);
-  
+
   int i, k;
 
   double temp_score;
@@ -360,7 +348,31 @@ void Surv_One_Split_Cont_W(double* cut,
   double LeftWeights = 0;
   double RightWeights = 0;
   double tempweight = 0;
-
+  vec lambda0(timepoints);
+  lambda0.fill(0);
+  
+  if(split_rule==3){//Finding the base hazard once
+    if(varw < 1){
+      vec Count_Fail(timepoints+1);
+      Count_Fail.fill(0);
+      vec Count_Censor(timepoints+1);
+      Count_Censor.fill(0);
+      double allweight=0;
+      
+      for(i=0; i<node_n; i++){
+        obs = useObs[i];
+        tempweight = subjectweight[obs];
+        allweight += tempweight;
+        
+        if (Censor[i] == 1)
+          Count_Fail[Y[i]] += tempweight;
+        else
+          Count_Censor[Y[i]] += tempweight;
+      }
+      lambda0 = haz_w(Count_Fail, Count_Censor, allweight, timepoints);
+    }
+  }
+  
     if (split_gen == 1) // random split
   {
 
@@ -399,22 +411,16 @@ void Surv_One_Split_Cont_W(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
-        else if (split_rule == 2)
+        else if(split_rule == 2)
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
         else
-          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
-        
+          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints, varw, lambda0);
       }
 
-      if (temp_score > *score and split_rule<3)//replaced score* with score
+      if (temp_score > *score)//replaced score* with score
       {
         *score = temp_score;//replaced *score with score
         *cut = temp_cut;//replaced *cut with cut
-      }
-      if (temp_score < *score and split_rule==3)//replaced score* with score
-      {
-        *score = temp_score;//replaced *score with score
-        *cut = temp_cut;
       }
     }
 
@@ -425,25 +431,29 @@ void Surv_One_Split_Cont_W(double* cut,
 
   vec xtemp(node_n);
   ivec index(node_n);
-  ivec censortemp(node_n);
-  
+
   for (i = 0; i < node_n; i++)
   {
     xtemp[i] = x[useObs[i]];
     index[i] = i;
   }
 
-  for(i=0; i<node_n; i++){
+  std::sort(index.begin(), index.end(), [&xtemp](size_t i, size_t j) {return (xtemp[i] < xtemp[j]);});
+
+  ivec censortemp(node_n);
+  
+  for (i = 0; i < node_n; i++)
+  {
+    xtemp[i] = x[useObs[index[i]]];
     censortemp[i] = Censor[index[i]];
   }
-  qSort_dindex(xtemp, 0, node_n-1, index);
 
-  int lowindex = 1;
-  int highindex = node_n - 2;
+  int lowindex = 0;
+  int highindex = node_n - 1;
   
-  //R_DBP("Control size\n");
   if(nmin_control){
     if(nmin_failure){
+      //Needs to be updated to use weights!!!
       int failcount = 0;
       int fi = 0; //index of observations to count up to the required number of failures
       if(sum(censortemp) < nmin){
@@ -455,14 +465,20 @@ void Surv_One_Split_Cont_W(double* cut,
           failcount = failcount + censortemp[fi];
         }
         lowindex = fi;
-        highindex = node_n - 1 - lowindex;
+        fi = node_n - 1;
+        failcount = censortemp[fi];
+        while(failcount < nmin){
+          fi--;
+          failcount += censortemp[fi];
+        }
+        highindex = fi;
       }
     }else{
-      int lowindex = imax(nmin, (int) alpha*node_n) - 1;
+      int lowindex = max(nmin, (int) alpha*node_n) - 1;
       int highindex = node_n - 1 - lowindex;
     }
   }
-  
+
   // check for ties
   while((xtemp[lowindex] == xtemp[lowindex+1]) & (lowindex < highindex)) lowindex ++;
   while((xtemp[highindex] == xtemp[highindex+1]) & (lowindex < highindex)) highindex --;
@@ -471,7 +487,7 @@ void Surv_One_Split_Cont_W(double* cut,
   if (split_gen == 2) // rank split
   {
 
-    
+
     int temp_rank;
 
     for (k = 0; k < nsplit; k++)
@@ -517,17 +533,12 @@ void Surv_One_Split_Cont_W(double* cut,
 
       if (split_rule == 1)
         temp_score = logrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights + RightWeights, timepoints);
-      else if (split_rule == 2)
+      else if(split_rule == 2)
         temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights + RightWeights, timepoints);
       else
-        temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+        temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints, varw, lambda0);
       
-      if (temp_score > *score and split_rule<3)
-      {
-        *score = temp_score;
-        *cut = (xtemp[temp_rank] + xtemp[temp_rank+1])/2;
-      }
-      if (temp_score < *score and split_rule==3)
+      if (temp_score > *score)
       {
         *score = temp_score;
         *cut = (xtemp[temp_rank] + xtemp[temp_rank+1])/2;
@@ -538,7 +549,7 @@ void Surv_One_Split_Cont_W(double* cut,
   if (split_gen == 3) // best split
   {
 
-    
+
     LeftWeights = 0;
     RightWeights = 0;
 
@@ -596,22 +607,17 @@ void Surv_One_Split_Cont_W(double* cut,
       // get score
       if (split_rule == 1)
         temp_score = logrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights + RightWeights, timepoints);
-      else if (split_rule == 2)
+      else if(split_rule == 2)
         temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights + RightWeights, timepoints);
       else
-        temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+        temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints, varw, lambda0);
       
-      if (temp_score > *score and split_rule<3)
+      if (temp_score > *score)
       {
         *score = temp_score;
         *cut = (xtemp[i] + xtemp[i+1])/2;;
       }
-      if (temp_score < *score and split_rule==3)
-      {
-        *score = temp_score;
-        *cut = (xtemp[i] + xtemp[i+1])/2;
-      }
-      
+
       // get next ready
       obs = index[i+1];
       tempweight = subjectweight[useObs[obs]];

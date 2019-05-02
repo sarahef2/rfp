@@ -1,43 +1,23 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
-//# include <Rdefines.h>
-//# include <R.h>
-//# include <Rmath.h>
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
-# include <cstring>
-# include <Rmath.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void Surv_One_Split_Cat(double* cut,
                         double* score,
                         const ivec useObs,
                         int node_n,
-                        const colvec x,
+                        const vec x,
                         double &varw, //The weight for this variable
                         const ivec Y, // y should be called by index i
                         const ivec Censor, // censor should be called by index i
@@ -56,7 +36,7 @@ void Surv_One_Split_Cat(double* cut,
 
   // summerize all categories in this node
   SURVCAT* Cat_Count = new SURVCAT[ncat];
-    
+
   //Moved since the function couldn't find them
   ivec goright(ncat);
   goright.fill(0);
@@ -70,7 +50,25 @@ void Surv_One_Split_Cat(double* cut,
   Right_Count_Censor.fill(0);
   ivec Right_Count_Fail(timepoints+1);
   Right_Count_Fail.fill(0);
-    
+  vec lambda0(timepoints);
+  lambda0.fill(-1);
+  
+  if(split_rule==3){//Finding the base hazard once
+    if(varw < 1){
+      ivec Count_Fail(timepoints+1);
+      Count_Fail.fill(0);
+      ivec Count_Censor(timepoints+1);
+      Count_Censor.fill(0);
+      
+      for(i=0; i<node_n; i++){
+        if (Censor[i] == 1)
+          Count_Fail[Y[i]]++;
+        else
+          Count_Censor[Y[i]]++;
+      }
+      lambda0 = haz(Count_Fail, Count_Censor, node_n, timepoints);
+    }
+  }
 
   for (i=0; i< ncat; i++)
   {
@@ -103,7 +101,7 @@ void Surv_One_Split_Cat(double* cut,
   {
     if (Cat_Count[i].f + Cat_Count[i].c <= 0)
     {
-      swap_SURVCAT(&Cat_Count[i], &Cat_Count[true_ncat-1]);
+      swap(&Cat_Count[i], &Cat_Count[true_ncat-1]);
       true_ncat--;
       i--;
     }
@@ -117,7 +115,7 @@ void Surv_One_Split_Cat(double* cut,
   {
     if (Cat_Count[i].f <= 0)
     {
-      swap_SURVCAT(&Cat_Count[i], &Cat_Count[true_ncat_f-1]);
+      swap(&Cat_Count[i], &Cat_Count[true_ncat_f-1]);
       true_ncat_f--;
       i--;
     }
@@ -132,36 +130,36 @@ void Surv_One_Split_Cat(double* cut,
     split_gen = 1;
     nsplit = 64;
   }
-  
+
   // if there are too many nsplit, switch to best
   if (split_gen < 3 && nsplit > pow(2, true_ncat-1) -1 )
   {
     split_gen = 3;
   }
-  
+
   // random split
   if (split_gen == 1 || split_gen == 2)
   {
-    
+
     for (k =0; k<nsplit; k++)
     {
       temp_score = -1;
       LeftN = 0;
-      
+
       // generate a random split that puts some cat into right
       for (i=0; i<true_ncat_f; i++)
         tempRight[i] = 1;
-      
+
       //memset(tempRight, 0, random_in_range(1, true_ncat_f)*sizeof(int));
-      permute_i(tempRight, true_ncat_f);
-      
+      permute(tempRight, true_ncat_f);
+
       // We should be checking if there will be enough observations for each side,
       // but I will skip it. Might need to fix it later
-      
+
       // for the nonfailure categories, randomly assign
       for (i=true_ncat_f; i<ncat; i++)
         tempRight[i] = (int) unif_rand()>0.5;
-      
+
       for (i = 0; i < true_ncat_f; i++)
       {
         if (tempRight[i] == 0) // go left
@@ -180,7 +178,7 @@ void Surv_One_Split_Cat(double* cut,
           }
         }
       }
-      
+
       if (LeftN > 0 && LeftN < node_n)
       {
         if (split_rule == 1)
@@ -188,43 +186,34 @@ void Surv_One_Split_Cat(double* cut,
         else if (split_rule == 2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
         else 
-          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, varw, lambda0);
       }
-      
-      if (temp_score > *score and split_rule<3)
+
+      if (temp_score > *score)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
-          
+
           *score = temp_score;
           *cut = pack(ncat, goright);
       }
-      if (temp_score < *score and split_rule==3)
-      {
-        for (i = 0; i< ncat; i ++)
-          if (tempRight[i] == 1)
-            goright[Cat_Count[i].cat] = 1;
-        
-        *score = temp_score;
-        *cut = pack(ncat, goright);
-      }
     }
   }
-  
+
   // best split
-  
+
   if (split_gen == 3)
   {
 
     nsplit = pow(2, true_ncat-1) -1;
-    
+
     for (k = 0; k < nsplit; k++)
     {
-      
+
       LeftN = 0;
       temp_score = -1;
-      
+
       // fit the next possible split rule using binary vectors
       tempRight[0]++;
 
@@ -236,7 +225,7 @@ void Surv_One_Split_Cat(double* cut,
           tempRight[i+1] ++;
         }
       }
-      
+
       for (i = 0; i < true_ncat; i++)
       {
         if (tempRight[i] == 0)
@@ -260,32 +249,21 @@ void Surv_One_Split_Cat(double* cut,
       {
         if (split_rule == 1)
           temp_score = logrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
-        else if(split_rule == 2)
+        else if (split_rule == 2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
         else 
-          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
-          
+          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, varw, lambda0);
       }
-      
-      if (temp_score > *score and split_rule<3)
+
+      if (temp_score > *score)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
-          
+
           *score = temp_score;
           *cut = pack(ncat, goright);
       }
-      if (temp_score < *score and split_rule==3)
-      {
-        for (i = 0; i< ncat; i ++)
-          if (tempRight[i] == 1)
-            goright[Cat_Count[i].cat] = 1;
-        
-        *score = temp_score;
-        *cut = pack(ncat, goright);
-      }
-      
     }
   }
 
@@ -319,7 +297,7 @@ void Surv_One_Split_Cat_W(double* cut,
   double RightWeights = 0;
 
   double temp_score = -1;
-  
+
   ivec goright(ncat);
   goright.fill(0);
   ivec tempRight(ncat);
@@ -332,8 +310,32 @@ void Surv_One_Split_Cat_W(double* cut,
   Right_Count_Censor.fill(0);
   vec Right_Count_Fail(timepoints+1);
   Right_Count_Fail.fill(0);
+  vec lambda0(timepoints);
+  lambda0.fill(0);
+  
 
-
+  if(split_rule==3){//Finding the base hazard once
+    double tempweight=0;
+    if(varw < 1){
+      vec Count_Fail(timepoints+1);
+      Count_Fail.fill(0);
+      vec Count_Censor(timepoints+1);
+      Count_Censor.fill(0);
+      double allweight=0;
+      
+      for(i=0; i<node_n; i++){
+        tempweight = subjectweight[useObs[i]];
+        allweight += tempweight;
+        
+        if (Censor[i] == 1)
+          Count_Fail[Y[i]] += tempweight;
+        else
+          Count_Censor[Y[i]] += tempweight;
+      }
+      lambda0 = haz_w(Count_Fail, Count_Censor, allweight, timepoints);
+    }
+  }
+  
   // summerize all categories in this node
   SURVCAT_w* Cat_Count = new SURVCAT_w[ncat];
 
@@ -368,7 +370,7 @@ void Surv_One_Split_Cat_W(double* cut,
   {
     if (Cat_Count[i].f + Cat_Count[i].c <= 0)
     {
-      swap_SURVCAT_w(&Cat_Count[i], &Cat_Count[true_ncat-1]);
+      swap(&Cat_Count[i], &Cat_Count[true_ncat-1]);
       true_ncat--;
       i--;
     }
@@ -382,7 +384,7 @@ void Surv_One_Split_Cat_W(double* cut,
   {
     if (Cat_Count[i].f <= 0)
     {
-      swap_SURVCAT_w(&Cat_Count[i], &Cat_Count[true_ncat_f-1]);
+      swap(&Cat_Count[i], &Cat_Count[true_ncat_f-1]);
       true_ncat_f--;
       i--;
     }
@@ -418,7 +420,7 @@ void Surv_One_Split_Cat_W(double* cut,
       for (i=0; i<true_ncat_f; i++)
         tempRight[i] = 1;
 
-      permute_i(tempRight, true_ncat_f);
+      permute(tempRight, true_ncat_f);
 
       // We should be checking if there will be enough observations for each side,
       // but I will skip it. Might need to fix it later
@@ -454,24 +456,15 @@ void Surv_One_Split_Cat_W(double* cut,
         else if(split_rule == 2)
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
         else 
-          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints, varw, lambda0);
       }
 
-      if (temp_score > *score and split_rule<3)
+      if (temp_score > *score)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
 
-          *score = temp_score;
-          *cut = pack(ncat, goright);
-      }
-      if (temp_score < *score and split_rule==3)
-      {
-        for (i = 0; i< ncat; i ++)
-          if (tempRight[i] == 1)
-            goright[Cat_Count[i].cat] = 1;
-          
           *score = temp_score;
           *cut = pack(ncat, goright);
       }
@@ -531,24 +524,15 @@ void Surv_One_Split_Cat_W(double* cut,
         else if(split_rule == 2)
           temp_score = suplogrank_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints);
         else 
-          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, timepoints, varw);
+          temp_score = loglik_w(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftWeights, LeftWeights+RightWeights, timepoints, varw, lambda0);
       }
 
-      if (temp_score > *score  and split_rule<3)
+      if (temp_score > *score)
       {
         for (i = 0; i< ncat; i ++)
           if (tempRight[i] == 1)
             goright[Cat_Count[i].cat] = 1;
 
-          *score = temp_score;
-          *cut = pack(ncat, goright);
-      }
-      if (temp_score < *score and split_rule==3)
-      {
-        for (i = 0; i< ncat; i ++)
-          if (tempRight[i] == 1)
-            goright[Cat_Count[i].cat] = 1;
-          
           *score = temp_score;
           *cut = pack(ncat, goright);
       }

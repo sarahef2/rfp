@@ -1,34 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
-//# include <Rdefines.h>
-//# include <R.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void PredictSurvivalKernel(const std::vector< colvec > &X,
                            const ivec &Y,
@@ -48,7 +31,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
                            int oob_only, //Should prediction be run on only oob obs?
                            bool InTrainSet,
                            int use_cores){
-  
+
 
   int N = myPara->N;
   int Nfail = myPara->Nfail;
@@ -58,17 +41,17 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
   int use_sub_weight = myPara->use_sub_weight;
 
   // parallel computing... set cores
-  
-  use_cores = imax(1, use_cores);
+
+  use_cores = max(1, use_cores);
 
   int haveCores = omp_get_max_threads();
-  
+
   if(use_cores > haveCores)
   {
     if (verbose) Rprintf("Do not have %i cores, use maximum %i cores. \n", use_cores, haveCores);
     use_cores = haveCores;
   }
-  
+
   mat remove_matrix(testN,Nfail+1);
   remove_matrix.fill(0);
 
@@ -102,7 +85,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
         }
       }
     }
-    
+
     double weights_sum = 0;
 
     for (j = 0; j < N; j++)
@@ -117,7 +100,7 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
 
     surv_matrix(i,0) = 1;
     weights_sum -= remove_matrix(i,0);
-    
+
     // KM survival function
     for (j = 1; j <= Nfail; j++)
     {
@@ -134,4 +117,3 @@ void PredictSurvivalKernel(const std::vector< colvec > &X,
 return;
 
 }
-  

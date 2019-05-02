@@ -1,32 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-# include <Rmath.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void Surv_Split_A_Node(TREENODE* Node,
                        std::vector<  colvec > X,
@@ -55,7 +40,7 @@ void Surv_Split_A_Node(TREENODE* Node,
   for (i = 1; i<node_n; i++)
     node_fail += Censor[useObs[i]];
 
-  if (node_fail == 0 || node_n < 2*nmin || ((node_fail < nmin) & nmin_failure))//Switched <=2*nmin to <2*nmin to match RSF
+  if (node_fail == 0 || node_n < 2*nmin || (node_fail < nmin & nmin_failure))//Switched <=2*nmin to <2*nmin to match RSF
   {
     TERMINATE:;
 
@@ -73,7 +58,7 @@ void Surv_Split_A_Node(TREENODE* Node,
       //Rcout << "Didn't find a split.  Nodesize: "<<node_n<<std::endl;;
       goto TERMINATE;
     }
-    
+
 
     // calculate left and right child node
 
@@ -82,7 +67,7 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     ivec useObsLeft(node_n);
     ivec useObsRight(node_n);
-    
+
     if (Ncat[splitVar] > 1)
     {
 
@@ -122,15 +107,10 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     if (LeftSize == 0 || RightSize == 0)
     {
-      R_DBP("Did not produce a proper split (%i) at node %i, for variable %i, need to check node \n", splitVal, Node, splitVar);
-      Rcout << "splitVal: " << splitVal << std::endl;;
-      Rcout << "LeftSize: " << LeftSize << std::endl;;
-      Rcout << "RightSize: " << RightSize << std::endl;;
-      Rcout << "useObs: " << useObs << std::endl;;
+      R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
       goto TERMINATE;
     }
 
-    //Rcout << "Good split " << std::endl;;
     // initiate left and right node
 
     Node->Var = splitVar;			// Splitting variable

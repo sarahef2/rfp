@@ -15,5 +15,5 @@ Repository: CRAN
 URL: https://cran.r-project.org/package=RLT
 Imports: Rcpp (>= 0.12.16)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 6.0.1
 SystemRequirements: GNU make
+Packaged: 2019-04-11 21:47:39 UTC; rqzhu

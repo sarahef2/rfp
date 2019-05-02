@@ -6,6 +6,23 @@
 
 using namespace Rcpp;
 
+// regForestFit
+List regForestFit(arma::mat datasetX_R, arma::vec datasetY_R, arma::ivec ncat_R, arma::vec subjectweight_R, arma::vec variableweight_R, List parameters_R, int usecores_R);
+RcppExport SEXP _RLT_regForestFit(SEXP datasetX_RSEXP, SEXP datasetY_RSEXP, SEXP ncat_RSEXP, SEXP subjectweight_RSEXP, SEXP variableweight_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type datasetX_R(datasetX_RSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type datasetY_R(datasetY_RSEXP);
+    Rcpp::traits::input_parameter< arma::ivec >::type ncat_R(ncat_RSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type subjectweight_R(subjectweight_RSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type variableweight_R(variableweight_RSEXP);
+    Rcpp::traits::input_parameter< List >::type parameters_R(parameters_RSEXP);
+    Rcpp::traits::input_parameter< int >::type usecores_R(usecores_RSEXP);
+    rcpp_result_gen = Rcpp::wrap(regForestFit(datasetX_R, datasetY_R, ncat_R, subjectweight_R, variableweight_R, parameters_R, usecores_R));
+    return rcpp_result_gen;
+END_RCPP
+}
 // survForestFit
 List survForestFit(arma::mat datasetX_R, arma::ivec datasetY_R, arma::ivec datasetCensor_R, arma::ivec ncat_R, arma::vec interval_R, arma::vec subjectweight_R, arma::vec variableweight_R, List parameters_R, int usecores_R);
 RcppExport SEXP _RLT_survForestFit(SEXP datasetX_RSEXP, SEXP datasetY_RSEXP, SEXP datasetCensor_RSEXP, SEXP ncat_RSEXP, SEXP interval_RSEXP, SEXP subjectweight_RSEXP, SEXP variableweight_RSEXP, SEXP parameters_RSEXP, SEXP usecores_RSEXP) {
@@ -57,6 +74,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RLT_regForestFit", (DL_FUNC) &_RLT_regForestFit, 7},
     {"_RLT_survForestFit", (DL_FUNC) &_RLT_survForestFit, 9},
     {"_RLT_survForestPrint", (DL_FUNC) &_RLT_survForestPrint, 1},
     {"_RLT_survForestPredict", (DL_FUNC) &_RLT_survForestPredict, 10},

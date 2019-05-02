@@ -1,34 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
-//# include <Rdefines.h>
-//# include <R.h>
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void Surv_Find_A_Split(int* splitVar,
                        double* splitVal,
@@ -47,7 +30,7 @@ void Surv_Find_A_Split(int* splitVar,
                        int &counter)
 {
 
-  //int N = myPara->N;
+  int N = myPara->N;
   int nmin = myPara->nmin;
   int nmin_control = myPara->nmin_control;
   int nmin_failure = myPara->nmin_failure;
@@ -61,15 +44,15 @@ void Surv_Find_A_Split(int* splitVar,
 
   int j;
 
-  int mincount = imax(nmin, (int) alpha*node_n);
-  //double minweight = (double) imax(nmin, (int) alpha*node_n) / N;
+  int mincount = max(nmin, (int) alpha*node_n);
+  //double minweight = (double) max(nmin, (int) alpha*node_n) / N;
 
   // collapse Y into contiguous integers
 
   int timepoints = 0;
   ivec Y_collapse(node_n);
   ivec Censor_collapse(node_n);
-  
+
   collapse(Y, Censor, Y_collapse, Censor_collapse, useObs, node_n, timepoints);
 
   int temp_var;
@@ -79,11 +62,11 @@ void Surv_Find_A_Split(int* splitVar,
 
   // calculate node information
 
-  int mtry_remaining = imax(1, imin(mtry, P));
-  
+  int mtry_remaining = max(1, min(mtry, P));
+
   ivec var_used(P);
   var_used.fill(0);
-  
+
   for (j = 0; j < mtry_remaining; j++)
   {
     temp_val = 0;
@@ -102,11 +85,10 @@ void Surv_Find_A_Split(int* splitVar,
     // }
     //Rcout << temp_var << " " ;
 
-    counter++; 
-    
+    counter++;
+
     double temp_vw;
-    if(use_var_weight) temp_vw=variableweight[temp_var]; 
-      else temp_vw=1.0; //If no variable weighting, then set variable weight to 1.  Otherwise weight=1/P, which skews loglikelihood weighting
+    temp_vw=variableweight[j]; 
 
     if (Ncat[temp_var] > 1)
     {
@@ -118,7 +100,7 @@ void Surv_Find_A_Split(int* splitVar,
 
         Surv_One_Split_Cat(&temp_val, &temp_score, (const ivec) useObs, node_n, X[temp_var], temp_vw, Y_collapse, Censor_collapse, Ncat[temp_var],
                            timepoints, split_gen, split_rule, nsplit, mincount);
-        
+
       }
 
     }else{
@@ -133,24 +115,18 @@ void Surv_Find_A_Split(int* splitVar,
                             timepoints, split_gen, split_rule, nsplit, mincount, nmin_control, nmin_failure);
       }
     }
-    
-    if (use_var_weight and split_rule<3)
-      temp_score = temp_score*variableweight[j];
+
+    if (use_var_weight or split_rule==3)
+      temp_score = temp_score*temp_vw;
 
     // update the score
-    if (temp_score > 0 && temp_score > best_score and split_rule<3)
+    if (temp_score > 0 && temp_score > best_score)
     {
       best_score = temp_score;
       *splitVar = temp_var;
       *splitVal = temp_val;
     }
-    if (temp_score > 0 && ((temp_score < best_score) or (best_score<0)) and split_rule==3)
-    {
-      best_score = temp_score;
-      *splitVar = temp_var;
-      *splitVal = temp_val;
-    }
-    }
+  }
 
   return;
 }

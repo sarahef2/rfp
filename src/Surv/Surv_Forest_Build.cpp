@@ -1,36 +1,17 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
 # include <RcppArmadillo.h>
-# include <math.h>       /* isnan, sqrt */
 // [[Rcpp::depends(RcppArmadillo)]]
-//# include <Rcpp.h>
-//# include <Rdefines.h>
-//# include <R.h>
-//# include <Rmath.h>
+
 using namespace Rcpp;
+using namespace arma;
 
 // my header file
 # include "..//survForest.h"
-# include "..//utilities.h"
+# include "..//Utility//utility.h"
 
 void survForestBuild(const std::vector<  colvec > &X,
                      const ivec &Y,
@@ -59,7 +40,7 @@ void survForestBuild(const std::vector<  colvec > &X,
   int replacement = myPara->replacement;
   int importance = myPara->importance;
   double resample_prob = myPara->resample_prob;
-  //int nimpute = myPara->nimpute;
+  int nimpute = myPara->nimpute;
   int size = (int) N*resample_prob;
   int nt;
   std::vector< mat > tree_matrix(ntrees);
@@ -68,21 +49,13 @@ void survForestBuild(const std::vector<  colvec > &X,
 
   // normalize the variable weight
 
-  standardize(variableweight, P);	// this cause precision loss...
+  standardize(variableweight, P);	// this may cause precision loss...
 
-  // parallel computing... set cores
+  // check parallel computing cores
 
-  use_cores = imax(1, use_cores);
+  checkCores(use_cores, verbose);
 
-  if (use_cores > 0) OMPMSG(1);
-
-  int haveCores = omp_get_max_threads();
-
-  if(use_cores > haveCores)
-  {
-    if (verbose) Rprintf("Do not have %i cores, use maximum %i cores. \n", use_cores, haveCores);
-    use_cores = haveCores;
-  }
+  // start trees
 
 #pragma omp parallel for schedule(static) num_threads(use_cores)
   for (nt = 0; nt < ntrees; nt++) // fit all trees
@@ -93,9 +66,9 @@ void survForestBuild(const std::vector<  colvec > &X,
     ivec inbagObs(size);
     ivec oobagObs(N);
     oobagObs.fill(0);
-    
+
     int OneSub;
-    //int oobag_n;
+    int oobag_n;
 
     //R_DBP("Bootstrap Sample");
     for (i=0; i < N; i++)
@@ -112,8 +85,8 @@ void survForestBuild(const std::vector<  colvec > &X,
         oobagObs[OneSub] = -1;
       }
 
-      //oobag_n = N;
-      
+      oobag_n = N;
+
       i=0;
       while(i<oobagObs.size())
         if(oobagObs(i) < 0)
@@ -134,9 +107,9 @@ void survForestBuild(const std::vector<  colvec > &X,
           oobagObs.shed_row(i);
         else
           i++;
-      //oobag_n = N - size;
+      oobag_n = N - size;
     }
-    
+
     // record the observations
     // if the ObsTrack is positive, then its in the fitting set, can have multiple counts
     // if the ObsTrack is zero, then its in the out-of-bag data
@@ -148,7 +121,7 @@ void survForestBuild(const std::vector<  colvec > &X,
     for (i = 0; i< size; i++) Ytemp[i] = Y[inbagObs[i]];
 
     //R_DBP("Sort Y\n");
-    qSort_iindex(Ytemp, 0, size-1, inbagObs);
+    std::sort(inbagObs.begin(), inbagObs.end(), [&Ytemp](size_t i, size_t j) {return (Ytemp[i] < Ytemp[j]);});
 
     TREENODE *TreeRoot = new TREENODE;
 
@@ -159,13 +132,13 @@ void survForestBuild(const std::vector<  colvec > &X,
     //R_DBP("Split %i\n",nt);
     // start to build the tree
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P, counter);
-    
+
     // covert nodes to tree and NodeRegi.
     int Node = 0;
 
     //R_DBP("Forest[nt]\n");
     Forest[nt] = TreeRoot;
-    
+
     //R_DBP("Record_NodeRegi\n");
     Record_NodeRegi(&Node, TreeRoot, NodeRegi, nt, ObsTerminal);//NodeRegi[nt]
 
@@ -173,9 +146,9 @@ void survForestBuild(const std::vector<  colvec > &X,
     int TreeLength;
     TreeLength = TreeSize(Forest[nt]);
     Node = 0;
-    
+
     FittedTree.set_size(TreeLength,4);
-    
+
     //Convert tree structure nodes into matrix
     //R_DBP("Record_Tree\n");
     Record_Tree(&Node, Forest[nt], FittedTree, TreeLength);
@@ -187,7 +160,7 @@ void survForestBuild(const std::vector<  colvec > &X,
   if(importance){
     Variable_Importance(X, Y, Censor, Ncat, myPara, subjectweight, tree_matrix, subj_id, N, P, ObsTrack, ObsTerminal, NodeRegi, VarImp, use_cores, oob_surv_matrix, oob_residuals);
   }
-  
+
   return;
 }
 
@@ -204,10 +177,10 @@ void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< iv
       ObsTerminal(inobs(i),nt) = node_num-1;
     }
   }else{
-    
+
     ivec empty(1);
     empty.fill(-1);
-    
+
     NodeRegi[nt].push_back(empty);//Not terminal node, so pushes empty vector
 
     Record_NodeRegi(Node, TreeRoot->Left, NodeRegi, nt, ObsTerminal);
@@ -220,7 +193,7 @@ void Record_NodeRegi(int* Node, TREENODE* TreeRoot, std::vector< std::vector< iv
 void Record_Tree(int* Node, TREENODE* TreeRoot, mat &FittedTree, int TreeLength)
 {
   *Node += 1;
-  
+
   if (TreeRoot->Var == -1) // terminal node
   {
     FittedTree(*Node-1,0)=-1;

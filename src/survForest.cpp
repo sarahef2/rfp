@@ -1,34 +1,18 @@
-//  **********************************************************************
-//
-//    Survival Forests (survForest)
-//
-//    This program is free software; you can redistribute it and/or
-//    modify it under the terms of the GNU General Public License
-//    as published by the Free Software Foundation; either version 3
-//    of the License, or (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public
-//    License along with this program; if not, write to the Free
-//    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-//    Boston, MA  02110-1301, USA.
-//
-//  **********************************************************************
-
+//  **********************************
+//  Reinforcement Learning Trees (RLT)
+//  Survival
+//  **********************************
 
 # include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
+
 using namespace Rcpp;
 using namespace arma;
 
 
 // my header file
 # include "survForest.h"
-# include "utilities.h"
+# include "Utility//utility.h"
 
 // main function
 // [[Rcpp::export()]]
@@ -48,17 +32,16 @@ List survForestFit(arma::mat datasetX_R,
 
   if (myPara->verbose) printParameters(myPara);
 
+  // number of cores
   int use_cores = usecores_R;
-  if (use_cores <= 0) use_cores = imax(1, omp_get_max_threads() - 1);
 
-  //// create data objects
-
+  // create data objects
   int N = myPara->N;
   int P = myPara->P;
   int ntrees = myPara->ntrees;
   //int nmin = myPara->nmin;
   int Nfail = myPara->Nfail; //Used in variable importance calculations
-  
+
   int i;
   int j;
   int nt = 0;
@@ -67,11 +50,11 @@ List survForestFit(arma::mat datasetX_R,
   // get X, Y, Censor and Treatment
 
   std::vector< colvec > X(P, colvec(N));
-  
+
   for (j = 0; j < P; j++) {
     X[j] = conv_to<colvec>::from(datasetX_R.col(j));
   };
-  
+
   const ivec Y = datasetY_R;
   const ivec Censor= datasetCensor_R;
   const ivec Ncat=ncat_R;
@@ -97,13 +80,13 @@ List survForestFit(arma::mat datasetX_R,
 
   ivec subj_id(N);
   for (i = 0; i  < N; i++) subj_id(i) = i;
-  
+
   ivec var_id(P);
-  for (i = 0; i  < P; i++) var_id(i) = i;  
-  
+  for (i = 0; i  < P; i++) var_id(i) = i;
+
   mat oob_surv_matrix(N,Nfail+1);
   oob_surv_matrix.fill(0);
-  
+
   vec oob_residuals(N);
   oob_residuals.fill(0);
 
@@ -129,14 +112,14 @@ List survForestFit(arma::mat datasetX_R,
                   oob_surv_matrix,
                   oob_residuals,
                   counter);
-  
+
   int TreeWidth = 4;
-  
-  // return subjects to R 
-  
+
+  // return subjects to R
+
   mat FittedTree;
   List FittedForest(ntrees);
-  
+
   int Node;
   int TreeLength;
 
@@ -163,7 +146,7 @@ List survForestFit(arma::mat datasetX_R,
   ReturnList["ObsTerminal"] = ObsTerminal;
   ReturnList["OobSurvival"] = oob_surv_matrix;
   ReturnList["Residuals"] = oob_residuals;
-  
+
   delete[] myPara;
   delete[] Forest;
 
@@ -195,14 +178,14 @@ void survForestPrint(List parameters_R)
                         List parameters_R,
                         int usecores_R)
  {
-//   
+//
   // copy parameters and check
   PARAMETERS* myPara = new PARAMETERS();
   copyParameters(myPara, parameters_R);
 
   //// create data objects
   int use_cores = usecores_R;
-  if (use_cores <= 0) use_cores = imax(1, omp_get_max_threads() - 1);
+  if (use_cores <= 0) use_cores = max(1, omp_get_max_threads() - 1);
 
   int N = myPara->N;
   int P = myPara->P;
@@ -255,7 +238,7 @@ void survForestPrint(List parameters_R)
   surv_matrix.fill(0);
   ivec tmp(testN);
   tmp.fill(0);
-  
+
   ivec subj_id(testN);
   for (i = 0; i  < testN; i++) subj_id(i) = i;
 
@@ -283,5 +266,5 @@ void survForestPrint(List parameters_R)
 
   return surv_matrix;//SurvMat;
  }
- 
- 
+
+
