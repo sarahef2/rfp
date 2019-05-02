@@ -118,17 +118,29 @@ void survForestBuild(const std::vector<  colvec > &X,
       ObsTrack(inbagObs[i],nt)++;
 
     ivec Ytemp(size);
-    for (i = 0; i< size; i++) Ytemp[i] = Y[inbagObs[i]];
+    ivec index(size);
+    for (i = 0; i< size; i++) {
+      Ytemp[i] = Y[inbagObs[i]];
+      index[i] = i;
+    }
 
+    //Rcout << "Ytemp= " << Ytemp << std::endl;;
     //R_DBP("Sort Y\n");
-    std::sort(inbagObs.begin(), inbagObs.end(), [&Ytemp](size_t i, size_t j) {return (Ytemp[i] < Ytemp[j]);});
+    //Rcout << "Y= " << Y << std::endl;;
+    //Rcout << "useObs= " << inbagObs << std::endl;;
+    std::sort(index.begin(), index.end(), [&Ytemp](size_t i, size_t j) {return (Ytemp[i] < Ytemp[j]);});
 
     TREENODE *TreeRoot = new TREENODE;
 
     // index vector will get destroyed within the tree fitting process.
     ivec inbagObs_copy(size);
-    for (i=0; i < size ; i++) inbagObs_copy[i] = inbagObs[i];
+    for (i=0; i < size ; i++) {
+      inbagObs_copy[i] = inbagObs[index[i]];
+      }
+    
+    for(i=0; i < size; i++) inbagObs[i] = inbagObs_copy[i];
 
+    //Rcout << "useObs= " << inbagObs << std::endl;;
     //R_DBP("Split %i\n",nt);
     // start to build the tree
     Surv_Split_A_Node(TreeRoot, X, Y, Censor, Ncat, Interval, myPara, subjectweight, inbagObs_copy, size, variableweight, var_id, P, counter);
