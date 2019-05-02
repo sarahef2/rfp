@@ -54,6 +54,8 @@ void Surv_Find_A_Split(int* splitVar,
   ivec Censor_collapse(node_n);
 
   collapse(Y, Censor, Y_collapse, Censor_collapse, useObs, node_n, timepoints);
+  
+  //Rcout << "Y_collapse= " << Y_collapse << std::endl;;
 
   int temp_var;
   double temp_val;
@@ -73,17 +75,6 @@ void Surv_Find_A_Split(int* splitVar,
     temp_score = -1;
 
     temp_var = sample_rotate(variableindex, variableweight, j, P);
-    // if(j==0){
-    //   temp_var = random_in_range(0, P);
-    //   var_used[temp_var] = 1;
-    // }else{
-    //   temp_var = random_in_range(0, P);
-    //   while(var_used(temp_var)==1){
-    //     temp_var = random_in_range(0, P);
-    //   }
-    //   var_used[temp_var] = 1;
-    // }
-    //Rcout << temp_var << " " ;
 
     counter++;
 
