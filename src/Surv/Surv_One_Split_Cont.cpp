@@ -45,6 +45,7 @@ void Surv_One_Split_Cont(double* cut,
   double temp_cut;
   vec lambda0(timepoints);
   lambda0.fill(0);
+  double loglik0;
   
   if(split_rule==3){//Finding the base hazard once
     if(varw < 1){
@@ -60,6 +61,7 @@ void Surv_One_Split_Cont(double* cut,
           Count_Censor[Y[i]]++;
       }
       lambda0 = haz(Count_Fail, Count_Censor, node_n, timepoints);
+      loglik0 = loglik(Count_Fail, Count_Censor, Right_Count_Fail, Right_Count_Censor, node_n, node_n, timepoints, 0, lambda0);
     }
   }
   
@@ -130,6 +132,7 @@ void Surv_One_Split_Cont(double* cut,
   for(i=0; i<node_n; i++){
     xtemp[i] = x[useObs[index[i]]];
     censortemp[i] = Censor[index[i]];
+    //Rcout << "Y[index[" <<i<<"]]="<<Y[index[i]] << std::endl;
   }
 
   //Rcout << "xtemp = " << xtemp << std::endl;
@@ -277,8 +280,8 @@ void Surv_One_Split_Cont(double* cut,
       else if(split_rule == 2)
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
-        temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, varw, lambda0);
-      //Rcout << temp_score <<std::endl;;
+        temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, varw, lambda0));
+      //Rcout<<"Cut: "<<xtemp[i]<<" Score: " << temp_score <<" Y[index[i]]: "<<Y[index[i]]<<" index[i]: "<<index[i]<<std::endl;;
 
       if (temp_score > *score)
       {

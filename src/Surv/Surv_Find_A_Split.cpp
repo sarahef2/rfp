@@ -107,7 +107,8 @@ void Surv_Find_A_Split(int* splitVar,
       }
     }
 
-    if (use_var_weight or split_rule==3)
+    //Rcout<<"Cut: "<<temp_val<<" Score: " << temp_score <<" for variable "<<temp_var<<std::endl;;
+    if (use_var_weight and split_rule<3)
       temp_score = temp_score*temp_vw;
 
     // update the score

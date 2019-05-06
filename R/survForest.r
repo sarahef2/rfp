@@ -146,7 +146,7 @@ survForest <- function(x, y, censor,
 
   # variable weights for mtry
   use.var.weight = !is.null(variable.weight)
-  if (length(variable.weight) != p) {
+  if (length(variable.weight) != p & use.var.weight) {
     warning("Variable weights length must by p, reset to equal weights")
     variable.weight = rep(1/p, p)
     use.var.weight = FALSE
@@ -157,10 +157,10 @@ survForest <- function(x, y, censor,
   }
   if (is.null(variable.weight)) 
     variable.weight = rep(1/p, p) 
-  else if(split.rule<3)
+  else #if(split.rule<3)
     variable.weight = variable.weight/sum(variable.weight)#Should vary based on split rule
-  else
-    variable.weight = variable.weight/max(variable.weight)
+  #else
+  #  variable.weight = variable.weight/max(variable.weight)
 
   storage.mode(variable.weight) <- "double"
 

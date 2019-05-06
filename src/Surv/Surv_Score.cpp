@@ -56,7 +56,7 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
     if(lambdaR[j-1]>0) loglik += Right_Count_Fail[j]*log(lambdaR[j-1]);
   }
   
-  return exp(loglik);
+  return -1/loglik;
 }
 
 vec haz_w(vec Count_Fail, vec Count_Censor, double Nw, int timepoints){
@@ -116,9 +116,6 @@ double logrank(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fa
   // calculate the logrank for this split
   LeftN -= Left_Count_Censor[0];
   AllN -= Left_Count_Censor[0] - Right_Count_Censor[0];
-
-  //Rcout <<"Left_Count_Fail[1]: " <<Left_Count_Fail[1] <<std::endl;;
-  //Rcout <<"Right_Count_Fail[1]: " <<Right_Count_Fail[1] <<std::endl;;
 
   for (int j = 1; j <= timepoints && AllN > 1; j++)
   {
