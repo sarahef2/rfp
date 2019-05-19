@@ -78,8 +78,8 @@ void Surv_Find_A_Split(int* splitVar,
 
     counter++;
 
-    double temp_vw;
-    temp_vw=variableweight[j]; 
+    double temp_vw = 1.0;
+    if(use_var_weight) temp_vw=variableweight[j]; 
 
     if (Ncat[temp_var] > 1)
     {

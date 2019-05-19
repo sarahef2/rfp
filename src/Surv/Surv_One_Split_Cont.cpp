@@ -48,7 +48,7 @@ void Surv_One_Split_Cont(double* cut,
   double loglik0;
   
   if(split_rule==3){//Finding the base hazard once
-    if(varw < 1){
+    //if(varw < 1){
       ivec Count_Fail(timepoints+1);
       Count_Fail.fill(0);
       ivec Count_Censor(timepoints+1);
@@ -62,7 +62,7 @@ void Surv_One_Split_Cont(double* cut,
       }
       lambda0 = haz(Count_Fail, Count_Censor, node_n, timepoints);
       loglik0 = loglik(Count_Fail, Count_Censor, Right_Count_Fail, Right_Count_Censor, node_n, node_n, timepoints, 0, lambda0);
-    }
+    //}
   }
   
   if (split_gen == 1) // random split
@@ -228,9 +228,6 @@ void Surv_One_Split_Cont(double* cut,
     }
   }
 
-  //Rcout << "low index is " << lowindex << "; high index is " << highindex << " split rule is " << split_rule << std::endl;
-
-
   //R_DBP("Best split\n");
   if (split_gen == 3) // best split
   {
@@ -281,7 +278,6 @@ void Surv_One_Split_Cont(double* cut,
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
         temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, varw, lambda0));
-      //Rcout<<"Cut: "<<xtemp[i]<<" Score: " << temp_score <<" Y[index[i]]: "<<Y[index[i]]<<" index[i]: "<<index[i]<<std::endl;;
 
       if (temp_score > *score)
       {
