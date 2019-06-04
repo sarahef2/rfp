@@ -283,9 +283,10 @@ void Surv_One_Split_Cont(double* cut,
       {
         *score = temp_score;
         *cut = (xtemp[i] + xtemp[i+1])/2;
+        //Rcout << "AllN " << node_n << "; LeftN " << i+1 << std::endl;
+        //Rcout << "cut is " << (xtemp[i] + xtemp[i+1])/2 << "; temp score is " << temp_score << std::endl;
       }
 
-      //Rcout << "cut is " << (xtemp[i] + xtemp[i+1])/2 << "; temp score is " << temp_score << "; temp cut is " << *cut << std::endl;
 
       // get next ready
 

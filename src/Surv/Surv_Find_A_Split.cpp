@@ -55,8 +55,6 @@ void Surv_Find_A_Split(int* splitVar,
 
   collapse(Y, Censor, Y_collapse, Censor_collapse, useObs, node_n, timepoints);
   
-  //Rcout << "Y_collapse= " << Y_collapse << std::endl;;
-
   int temp_var;
   double temp_val;
   double temp_score;
@@ -107,7 +105,6 @@ void Surv_Find_A_Split(int* splitVar,
       }
     }
 
-    //Rcout<<"Cut: "<<temp_val<<" Score: " << temp_score <<" for variable "<<temp_var<<std::endl;;
     if (use_var_weight and split_rule<3)
       temp_score = temp_score*temp_vw;
 

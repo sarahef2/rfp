@@ -107,7 +107,7 @@ void Surv_Split_A_Node(TREENODE* Node,
 
     if (LeftSize == 0 || RightSize == 0)
     {
-      R_DBP("Did not produce a proper split at node %i, for variable %i, need to check node \n", Node, splitVar);
+      R_DBP("Did not produce a proper split at node %i, for variable %i with cut=%i, need to check node \n", Node, splitVar, splitVal);
       goto TERMINATE;
     }
 

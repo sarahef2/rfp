@@ -151,7 +151,9 @@ vec haz(ivec Count_Fail, ivec Count_Censor, double N, int timepoints){
 }
 
 double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fail, ivec Right_Count_Censor, double LeftN, double AllN, int timepoints, double w, vec &lambda0){
-  if(timepoints==1) return -1;
+  if(timepoints==1 | AllN==LeftN | LeftN==0) {
+    return -1;
+    }
   //Rewrite so that if w=1, skip one of the initializations.  
   vec lambdaLtmp = haz(Left_Count_Fail, Left_Count_Censor, LeftN, timepoints);
   vec lambdaRtmp = haz(Right_Count_Fail, Right_Count_Censor, AllN-LeftN, timepoints);
@@ -166,6 +168,8 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
     lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*w + lambda0[i];
   }
   
+  //Rcout << "Left Hazard " << lambdaL << std::endl;  
+  //Rcout << "Right Hazard " << lambdaR << std::endl;  
   double loglik = 0;
   double tempL = 0;
   double tempR = 0;
