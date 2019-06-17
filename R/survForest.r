@@ -1,21 +1,21 @@
 #' @title survForest
-#' @description Main function to fit survival forests
+#' @description Main function to fit survival random forests
 #' @param x A matrix or data.frame for features
 #' @param y Response variable, a numeric/factor vector or a Surv object
 #' @param censor The censoring indicator if survival model is used
-#' @param ntrees Number of trees default is \code{ntrees = 500}
-#' @param mtry Number of variables used at each internal node
+#' @param ntrees Number of trees; default is \code{ntrees = 500}
+#' @param mtry Number of variables considered at each internal node
 #' @param split.gen How the cutting points are generated
 #' @param split.rule How to compare the splits
-#' @param nsplit Number of random cutting points to compare for each variable at an internal node
-#' @param nmin Minimum number of observations required in an internal node to perform a split. Will split an internal node if it has 2*\code{nmin} observations. (CHECK)
-#' @param nmin.control Should the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.
-#' @param nmin.failure Should the amount of failures in the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.  If true, forces nmin.control=TRUE as well.
+#' @param nsplit Number of random cutting points to compare for each variable at an internal node; only used for \code{split.gen = "random"}
+#' @param nmin Minimum number of observations required in an internal node to perform a split. Will split an internal node if it has 2*\code{nmin} observations. 
+#' @param nmin.control Should the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.  \code{nmin.control=TRUE} will force at least \code{nmin} observations in each terminal node  
+#' @param nmin.failure Should the amount of failures in the terminal node size be forced to be at least nmin?  Default FALSE will split any node with 2*\code{nmin} observations without regard to nmin.  If TRUE, forces nmin.control=TRUE as well.
 #' @param alpha Minimum number of observations required for each child node as a portion of the parent node. Must be within \code{(0, 0.5]}.
 #' @param replacement Whether the in-bag samples are sampled with replacement
-#' @param resample.prob Proportion of in-bag samples
+#' @param resample.prob Proportion of observations selected as in-bag samples
 #' @param subject.weight Subject weights
-#' @param variable.weight Variable weights when randomly sample \code{mtry} to select the splitting rule
+#' @param variable.weight Variable weights for weighted splitting rules (see details)  
 #' @param importance Should importance measures be calculated
 #' @param use.cores Number of cores for parallel computing
 #' @param verbose Printing additional information

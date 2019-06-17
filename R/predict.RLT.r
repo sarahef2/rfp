@@ -1,5 +1,5 @@
 #' @title predict.RLT
-#' @description The prediction function for personalized survival forest
+#' @description The prediction function for survival random forest
 #' @param object A fitted RLT object
 #' @param testx Testing data
 #' @param use.cores number of cores (by default use number of threads -1)
