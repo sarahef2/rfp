@@ -101,7 +101,8 @@ void Surv_One_Split_Cont(double* cut,
         else if (split_rule==2)
           temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints);
         else
-          temp_score = loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, varw, lambda0);
+          temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, varw, lambda0));
+          //temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, LeftN, node_n, timepoints, 0.001, lambda0)-loglik0)/0.001;
       }
 
       if (temp_score > *score)
@@ -278,7 +279,8 @@ void Surv_One_Split_Cont(double* cut,
         temp_score = suplogrank(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints);
       else
         temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, varw, lambda0));
-
+        //temp_score = (loglik(Left_Count_Fail, Left_Count_Censor, Right_Count_Fail, Right_Count_Censor, i+1, node_n, timepoints, 0.001, lambda0)-loglik0)/0.001;
+      
       if (temp_score > *score)
       {
         *score = temp_score;

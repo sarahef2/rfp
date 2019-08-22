@@ -154,22 +154,27 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
   if(timepoints==1 | AllN==LeftN | LeftN==0) {
     return -1;
     }
-  //Rewrite so that if w=1, skip one of the initializations.  
-  vec lambdaLtmp = haz(Left_Count_Fail, Left_Count_Censor, LeftN, timepoints);
-  vec lambdaRtmp = haz(Right_Count_Fail, Right_Count_Censor, AllN-LeftN, timepoints);
   
   vec lambdaL(timepoints+1);
   lambdaL.fill(0);
   vec lambdaR(timepoints+1);
   lambdaR.fill(0);
-  
-  for(int i = 0; i < timepoints; i++){
-    lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*w + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
-    lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*w + lambda0[i];
+
+  if(w==1){
+    lambdaL = haz(Left_Count_Fail, Left_Count_Censor, LeftN, timepoints);
+    lambdaR = haz(Right_Count_Fail, Right_Count_Censor, AllN-LeftN, timepoints);
+  }else{
+    vec lambdaLtmp = haz(Left_Count_Fail, Left_Count_Censor, LeftN, timepoints);
+    vec lambdaRtmp = haz(Right_Count_Fail, Right_Count_Censor, AllN-LeftN, timepoints);
+    
+    for(int i = 0; i < timepoints; i++){
+      //lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*w + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
+      lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*0.01 + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
+      //lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*w + lambda0[i];
+      lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*0.01 + lambda0[i];
+    }
   }
   
-  //Rcout << "Left Hazard " << lambdaL << std::endl;  
-  //Rcout << "Right Hazard " << lambdaR << std::endl;  
   double loglik = 0;
   double tempL = 0;
   double tempR = 0;

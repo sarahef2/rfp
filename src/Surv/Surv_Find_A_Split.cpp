@@ -105,8 +105,9 @@ void Surv_Find_A_Split(int* splitVar,
       }
     }
 
-    if (use_var_weight and split_rule<3)
-      temp_score = temp_score*temp_vw;
+    //if (use_var_weight and split_rule<3)
+    if (use_var_weight)
+        temp_score = temp_score*temp_vw;
 
     // update the score
     if (temp_score > 0 && temp_score > best_score)
