@@ -167,12 +167,15 @@ double loglik(ivec Left_Count_Fail, ivec Left_Count_Censor, ivec Right_Count_Fai
     vec lambdaLtmp = haz(Left_Count_Fail, Left_Count_Censor, LeftN, timepoints);
     vec lambdaRtmp = haz(Right_Count_Fail, Right_Count_Censor, AllN-LeftN, timepoints);
     
-    for(int i = 0; i < timepoints; i++){
-      //lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*w + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
-      lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*0.01 + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
-      //lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*w + lambda0[i];
-      lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*0.01 + lambda0[i];
-    }
+    //Faster than a loop- it's been timed
+    lambdaL = (lambdaLtmp-lambda0)*0.1+lambda0;//
+    lambdaR = (lambdaRtmp-lambda0)*0.1+lambda0;
+    // for(int i = 0; i < timepoints; i++){
+    //   //lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*w + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
+    //   lambdaL[i] = (lambdaLtmp[i]-lambda0[i])*0.1 + lambda0[i];//Change w to 0.0001 for everyone, calc change in likelihood, and then divide by the w.  Each variable has its own gradient, and we penalize the gradient
+    //   //lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*w + lambda0[i];
+    //   lambdaR[i] = (lambdaRtmp[i]-lambda0[i])*0.1 + lambda0[i];
+    // }
   }
   
   double loglik = 0;
